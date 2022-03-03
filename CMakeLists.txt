@@ -7,4 +7,4 @@ include(External)
 include(Paths)
 include(Compiler)
 
-add_executable(helloWorld src/helloWorld.cc)
+add_executable(helloWorld main/helloWorld.cc)
