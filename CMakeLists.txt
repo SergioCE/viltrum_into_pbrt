@@ -7,4 +7,4 @@ include(External)
 include(Paths)
 include(Compiler)
 
-add_executable(helloWorld main/helloWorld.cc)
+add_executable(sphere_image main/sphere_image.cc)

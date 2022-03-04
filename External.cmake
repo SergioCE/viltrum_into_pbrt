@@ -43,5 +43,29 @@ ExternalProject_Add(cimg
 )
 add_dependencies(update cimg-update)
 
+ExternalProject_Add(cimg-additions
+  GIT_REPOSITORY https://github.com/adolfomunoz/cimg_additions.git
+  SOURCE_DIR ${EXTERNAL_INSTALL_LOCATION}/cimg_additions
+  UPDATE_DISCONNECTED 1
+  STEP_TARGETS update
+  BUILD_COMMAND ""
+  CONFIGURE_COMMAND ""
+  INSTALL_COMMAND ""
+)
+add_dependencies(update cimg-additions-update)
 
+ExternalProject_Add(eigen
+  GIT_REPOSITORY https://github.com/eigenteam/eigen-git-mirror
+  SOURCE_DIR ${EXTERNAL_INSTALL_LOCATION}/eigen
+  UPDATE_DISCONNECTED 1
+  STEP_TARGETS update
+  BUILD_COMMAND ""
+  CONFIGURE_COMMAND ""
+  INSTALL_COMMAND ""
+)
+add_dependencies(update eigen-update)
+
+
+include_directories(${EXTERNAL_INSTALL_LOCATION}/eigen)
 include_directories(${EXTERNAL_INSTALL_LOCATION}/CImg)
+include_directories(${EXTERNAL_INSTALL_LOCATION}/cimg_additions)
