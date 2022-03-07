@@ -7,4 +7,5 @@ include(External)
 include(Paths)
 include(Compiler)
 
-add_executable(sphere_image main/sphere_image.cc)
+#add_executable(sphere_image main/sphere_image.cc)
+add_executable(sphere_sampler main/sphere_sampler.cc)

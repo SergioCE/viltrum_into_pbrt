@@ -65,7 +65,21 @@ ExternalProject_Add(eigen
 )
 add_dependencies(update eigen-update)
 
+ExternalProject_Add(pbrt
+  GIT_REPOSITORY https://github.com/mmp/pbrt-v4.git
+  SOURCE_DIR ${EXTERNAL_INSTALL_LOCATION}/pbrt
+  UPDATE_DISCONNECTED 1
+  STEP_TARGETS update
+  BUILD_COMMAND ""
+  CONFIGURE_COMMAND ""
+  INSTALL_COMMAND ""
+)
+add_dependencies(update pbrt)
+
+
+
 
 include_directories(${EXTERNAL_INSTALL_LOCATION}/eigen)
+include_directories(${EXTERNAL_INSTALL_LOCATION}/pbrt)
 include_directories(${EXTERNAL_INSTALL_LOCATION}/CImg)
 include_directories(${EXTERNAL_INSTALL_LOCATION}/cimg_additions)
