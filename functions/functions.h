@@ -17,24 +17,25 @@ Spectrum sphere(double x, double y, double z){
 }
 
 template<std::size_t N>
-Spectrum sphereSampler(ViltrumSampler<N> sampler){
-    if(pow(sampler.Get1D(),2) + pow(sampler.Get1D(),2) + pow(sampler.Get1D(),2) < 1) return Spectrum(sampler.Get1D(),sampler.Get1D(),sampler.Get1D());
+Spectrum sphereSamplerPbrt(ViltrumSamplerPbrt<N> &sampler){
+    if(pow(sampler.Get1D(),2) + pow(sampler.Get1D(),2) + pow(sampler.Get1D(),2) < 1) {
+        //std::cout<<sampler.Get1D()<<std::endl;
+        return Spectrum(sampler.Get1D(),sampler.Get1D(),sampler.Get1D());
+    }
     else return Spectrum(0,0,0); 
 }
 
 
 template<std::size_t N>
-class SphereViltrum {
+class SphereViltrumPbrt {                   //Wrapper para la función sphere
     public:
     Spectrum operator()(const std::array<double,N>& x) const {
-        ViltrumSampler<N> sampler(x, eng, distr);
+        ViltrumSamplerPbrt<N> sampler(x, samplerP);
 
-        return sphereSampler(sampler);
+        return sphereSamplerPbrt(sampler);
     }
-    SphereViltrum(std::default_random_engine eng, 
-        uniform_real_distribution<double> distr) : eng(eng), distr(distr){}
+    SphereViltrumPbrt(pbrt::IndependentSampler &sampler) : samplerP(sampler){}
 
     private:
-    default_random_engine eng;
-    uniform_real_distribution<double> distr;
+    pbrt::IndependentSampler &samplerP;
 };

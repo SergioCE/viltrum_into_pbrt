@@ -12,16 +12,14 @@ int main(){
     viltrum::CImgWrapper<double> image(w,h);
     
 
-    random_device rd;
-    default_random_engine eng(rd());
-    uniform_real_distribution<double> distr(0,1);
+    pbrt::IndependentSampler sampler(1024);
 
-    //SphereViltrum<3> esfera(eng,distr);
+    
 
     auto integrator_bins = viltrum::integrator_bins_monte_carlo_uniform(100000000); //Probar con más samples
-    auto range = viltrum::range_all<6>(-1.0,1.0);
+    auto range = viltrum::range_all<3>(-1.0,1.0);
 
-    integrator_bins.integrate(image,image.resolution(),SphereViltrum<6>(eng,distr), range);
+    integrator_bins.integrate(image,image.resolution(),SphereViltrumPbrt<3>(sampler), range);
     
     std::stringstream filename;
 	filename<<"Sphere.hdr";

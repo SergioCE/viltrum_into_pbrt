@@ -8,4 +8,5 @@ include(Paths)
 include(Compiler)
 
 #add_executable(sphere_image main/sphere_image.cc)
-add_executable(sphere_sampler main/sphere_sampler.cc)
+#add_executable(sphere_sampler main/sphere_sampler.cc)
+add_executable(sphere_samplerPbrt main/sphere_samplerPbrt.cc)
