@@ -1,5 +1,5 @@
 #include "iostream"
-#include "../functions/functions.h"
+#include "../utils/spheres.h"
 #include <viltrum/viltrum.h>
 #include "viltrum/utils/cimg-wrapper.h"
 #include "viltrum/quadrature/monte-carlo.h"

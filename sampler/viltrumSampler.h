@@ -1,9 +1,7 @@
 #pragma once
 
-#include <iostream>
-#include <array>
+#include "../utils/viltrum_into_pbrt.h"
 #include <pbrt/src/pbrt/samplers.h>
-#include <random>
 
 using namespace std;
 
@@ -15,12 +13,12 @@ class ViltrumSamplerPbrt {                      //NOTA: Fijarse en este
     // IndependentSampler Public Methods
     ViltrumSamplerPbrt(const std::array<double,N>& x, pbrt::IndependentSampler &sampler) : sampler(sampler), i(0), v(x){}
 
-    double Get1D() { 
+    pbrt::Float Get1D() { 
         if(i < v.size()) return v[i++]; 
         else return sampler.Get1D();
     }
     
-    //Point2f Get2D() { return {Get1D(), Get1D()}; }
+    pbrt::Point2f Get2D() { return {Get1D(), Get1D()}; }
     
     //Point2f GetPixel2D() { return Get2D(); }
 

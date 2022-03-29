@@ -1,15 +1,9 @@
 #pragma once
 
-#include <Eigen/Dense>
-#include "../sampler/viltrumSampler.h"
-#include <math.h>
-#include <random>
 
-using namespace std;
+#include "viltrum_into_pbrt.h"
 
-#ifndef Spectrum
-using Spectrum = Eigen::Array3f;
-#endif
+
 
 Spectrum sphere(double x, double y, double z){
     if(x*x + y*y + z*z < 1) return Spectrum(1,1,1);

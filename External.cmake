@@ -70,11 +70,24 @@ ExternalProject_Add(pbrt
   SOURCE_DIR ${EXTERNAL_INSTALL_LOCATION}/pbrt
   UPDATE_DISCONNECTED 1
   STEP_TARGETS update
+  #BUILD_COMMAND ""
+  #CONFIGURE_COMMAND ""
+  INSTALL_COMMAND ""
+)
+add_dependencies(update pbrt)
+
+
+ExternalProject_Add(utf8proc
+  GIT_REPOSITORY https://github.com/JuliaStrings/utf8proc.git
+  SOURCE_DIR ${EXTERNAL_INSTALL_LOCATION}/utf8proc
+  UPDATE_DISCONNECTED 1
+  STEP_TARGETS update
   BUILD_COMMAND ""
   CONFIGURE_COMMAND ""
   INSTALL_COMMAND ""
 )
-add_dependencies(update pbrt)
+add_dependencies(update utf8proc)
+
 
 
 
