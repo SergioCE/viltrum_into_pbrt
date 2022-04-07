@@ -20,7 +20,7 @@ class ViltrumSamplerPbrt {                      //NOTA: Fijarse en este
     
     pbrt::Point2f Get2D() { return {Get1D(), Get1D()}; }
     
-    //Point2f GetPixel2D() { return Get2D(); }
+    pbrt::Point2f GetPixel2D() { return Get2D(); }
 
   private:
     pbrt::IndependentSampler &sampler;                    //Sampler por referencia (todo aleatorios) o por copia (mismos siempre)

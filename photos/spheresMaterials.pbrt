@@ -1,0 +1,59 @@
+# eye
+# look at point
+LookAt 3 4 1.5
+    0.5 0.5 0
+    0 0 1
+# up vector
+Camera "perspective"
+    "float fov" [ 90 ]
+Sampler "halton"
+    "integer pixelsamples" [ 1000 ]
+Integrator "path"
+Film "rgb"
+    "integer yresolution" [ 500 ]
+    "integer xresolution" [ 500 ]
+    "string filename" [ "spheresMaterials.png" ]
+
+
+WorldBegin
+
+#MakeNamedMedium "mymedium" "string type" "homogeneous" "rgb sigma_s" [100 100 100]
+
+# uniform blue-ish illumination from all directions
+# approximate the sun
+LightSource "infinite"
+    "rgb L" [ 0.4 0.45 0.5 ]
+LightSource "distant"
+    "float scale" [1.5]
+    "blackbody L" [ 3000 ]
+    "point3 from" [ -30 -80 100 ]
+
+
+
+AttributeBegin
+    Translate 2 2 0
+    Material "conductor"
+    Shape "sphere"
+        "float radius" [ .75 ]
+AttributeEnd
+AttributeBegin
+    Translate -1.2 2 0.25
+    Material "coateddiffuse"
+    Shape "sphere"
+        "float radius" [ 1.5 ]
+AttributeEnd
+AttributeBegin
+    Texture "checks" "spectrum" "checkerboard"
+        "rgb tex2" [ 0.8 0.8 0.8 ]
+        "rgb tex1" [ 0.1 0.1 0.1 ]
+        "float vscale" [ 8 ]
+        "float uscale" [ 8 ]
+    Material "diffuse"
+        "texture reflectance" [ "checks" ]
+    Translate 0 0 -1
+    Shape "trianglemesh"
+        "point2 uv" [ 0 0 1 0 1 1 0 1 
+            ]
+        "point3 P" [ -20 -20 0 20 -20 0 20 20 0 -20 20 0 ]
+        "integer indices" [ 0 1 2 0 2 3 ]
+AttributeEnd
