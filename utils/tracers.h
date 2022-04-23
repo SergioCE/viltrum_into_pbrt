@@ -6,47 +6,70 @@
 #include <pbrt/shapes.h>
 #include <pbrt/cpu/primitive.h>
 #include <pbrt/util/stats.h>
+#include <pbrt/base/sampler.h>
 #include <pbrt/util/sampling.h>
+#include <pbrt/cpu/integrators.h>
+#include <pbrt/materials.h>
+#include "../utils/tracers.h"
+#include "../utils/parsePbrt.h"
 
 
 
-template<std::size_t N>
+SpectrumVilt F(pbrt::Camera camera, pbrt::Sampler &sampler, pbrt::Point2i photoSize, pbrt::ScratchBuffer &scratchBuffer, pbrt::RayIntegrator* integrator);
+
 class renderPbrt {                   //Wrapper para la función sphere
     public:
-    Spectrum operator()(const std::array<double,N>& x) const {
-        ViltrumSamplerPbrt<N> sampler(x, samplerP);
+    SpectrumVilt operator()(const std::array<double,N>& x) const {
+        pbrt::ViltrumSamplerPbrt samplerViltrum(x, samplerP, spp_);
+        pbrt::Sampler sampler = samplerViltrum.Clone(alloc);
 
-        return F(camera_, shapes_, sampler, photoSize);
+        return F(camera_, sampler, photoSize, scratchBuffer, integrator_);
+    };
+   /* renderPbrt(pbrt::IndependentSampler &sampler, pbrt::Camera camera, 
+        pbrt::Primitive shapes, pbrt::Point2i photoSize, pbrt::ScratchBuffer &scratchBuffer, 
+        pbrt::Integrator integrator) : integrator(integrator) scratchBuffer(scratchBuffer), shapes_(shapes), photoSize(photoSize), camera_(camera) , samplerP(sampler){}
+*/
+    renderPbrt(pbrt::RayIntegrator* integrator, pbrt::Camera camera, pbrt::Sampler sampler, int spp, pbrt::Point2i photoSize, pbrt::ScratchBuffer &scratchBuffer
+            ): spp_(spp), integrator_(integrator), camera_(camera), samplerP(sampler), scratchBuffer(scratchBuffer), photoSize(photoSize){
+                
     }
-    renderPbrt(pbrt::IndependentSampler &sampler, pbrt::Camera camera, 
-        pbrt::Primitive shapes, pbrt::Point2i photoSize) : shapes_(shapes), photoSize(photoSize), camera_(camera) , samplerP(sampler){}
 
     private:
+    int spp_;
+    pbrt::Allocator alloc;
+    pbrt::RayIntegrator* integrator_;
+    pbrt::ScratchBuffer &scratchBuffer;
     pbrt::Point2i photoSize;
     pbrt::Camera camera_;
-    pbrt::Primitive shapes_;
-    pbrt::IndependentSampler &samplerP;
+    pbrt::Sampler &samplerP;
 };
 
-template<std::size_t N>
-Spectrum F(pbrt::Camera camera, pbrt::Primitive shapes, ViltrumSamplerPbrt<N> &sampler, pbrt::Point2i photoSize){
+
+SpectrumVilt F(pbrt::Camera camera, pbrt::Sampler &sampler, pbrt::Point2i photoSize, pbrt::ScratchBuffer &scratchBuffer, pbrt::RayIntegrator* integrator){
+    
     pbrt::SampledWavelengths lambda = camera.GetFilm().SampleWavelengths(0.5);
-    pbrt::Filter filter = camera.GetFilm().GetFilter();
+    pbrt::Filter filter = camera.GetFilm().GetFilter();                                 //Mejor get2D
     pbrt::CameraSample cameraSample = GetCameraSample(sampler, pbrt::Point2i(photoSize[0]*sampler.Get1D(),photoSize[1]*sampler.Get1D()), filter);       //Nota: Ver cómo la cámara genera el rayo
 
     // Generate camera ray for current sample
-    pstd::optional<pbrt::CameraRay> cr = camera.GenerateRay(cameraSample, lambda);
+    pstd::optional<pbrt::CameraRayDifferential> cr = camera.GenerateRayDifferential(cameraSample, lambda);
 
-    pbrt::Ray ray = cr->ray;
-    //cout<<ray.ToString()<<endl;
-    pstd::optional<pbrt::ShapeIntersection> intersect = shapes.Intersect(ray,100000000000000);
-    if(!intersect) return Spectrum(1,1,1);
-    else{
-        pbrt::Vector3f direction = SampleCosineHemisphere(sampler.Get2D());
-        pbrt::Ray ray = intersect->intr.SpawnRayTo(pbrt::Point3f(direction));
-        pstd::optional<pbrt::ShapeIntersection> intersect2 = shapes.Intersect(ray,100000000000);
-        if(!intersect2) return Spectrum(1,0,0);//return intersect->intr.material.color_;
-        else return Spectrum(0,0,0);
-    }
+    Float rayDiffScale =
+            std::max<Float>(.125f, 1 / std::sqrt((Float)sampler.SamplesPerPixel()));
+    
+    cr->ray.ScaleDifferentials(rayDiffScale);
+    
+    pbrt::SampledSpectrum L(0.);
+    pbrt::VisibleSurface visibleSurface;
 
+    bool initializeVisibleSurface = camera.GetFilm().UsesVisibleSurface();
+    L = cr->weight * integrator->Li(cr->ray, lambda, sampler, scratchBuffer,initializeVisibleSurface ? &visibleSurface : nullptr);                                //Necesito un integrador para usar su LI, qué hago?
+
+    pbrt::RGB color = camera.GetFilm().GetPixelSensor()->ToSensorRGB(L, lambda);     
+    
+    //cout<<L<<endl;
+    //pbrt::RGB color = L.ToRGB(lambda, *pbrt::RGBColorSpace::sRGB);
+    //cout<<color[0]<<","<< color[1]<<"."<< color[2]<<endl;
+    return SpectrumVilt(color[0] * cameraSample.filterWeight, color[1] * cameraSample.filterWeight, color[2] * cameraSample.filterWeight);
+    //RGB ToRGB(const SampledWavelengths &lambda, const RGBColorSpace &cs) const;
 }

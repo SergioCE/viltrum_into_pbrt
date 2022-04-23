@@ -70,7 +70,10 @@ ExternalProject_Add(pbrt
   SOURCE_DIR ${EXTERNAL_INSTALL_LOCATION}/pbrt
   UPDATE_DISCONNECTED 1
   STEP_TARGETS update
-  #BUILD_COMMAND ""
+  #COMMAND "echo hola"
+  BUILD_COMMAND cp ${CMAKE_CURRENT_SOURCE_DIR}/pbrt_changes/sampler.h ${CMAKE_CURRENT_SOURCE_DIR}/external/pbrt/src/pbrt/base/sampler.h
+  COMMAND cp ${CMAKE_CURRENT_SOURCE_DIR}/pbrt_changes/samplers.h ${CMAKE_CURRENT_SOURCE_DIR}/external/pbrt/src/pbrt/samplers.h
+  COMMAND ${CMAKE_COMMAND} --build .
   #CONFIGURE_COMMAND ""
   INSTALL_COMMAND ""
 )
@@ -83,6 +86,8 @@ ExternalProject_Add(utf8proc
   UPDATE_DISCONNECTED 1
   STEP_TARGETS update
   BUILD_COMMAND ""
+  #BUILD_COMMAND echo hola 
+  #COMMAND cmake --build .
   CONFIGURE_COMMAND ""
   INSTALL_COMMAND ""
 )

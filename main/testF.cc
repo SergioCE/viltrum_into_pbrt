@@ -17,18 +17,36 @@ int main(int argc, char *argv[]){
     
     int w = 400;
     int h = 400;
+    int spp = 100;
+
     viltrum::CImgWrapper<double> image(w,h);
 
     Primitive shapes = getPrimitives(scenePbrt);
 
-
+    pbrt::ScratchBuffer scratchBuffer(65536);
 
     pbrt::IndependentSampler sampler(1024);
 
 
-    auto integrator_bins = viltrum::integrator_bins_monte_carlo_uniform(w*h*100); //Probar con más samples
-    auto range = viltrum::range_all<10>(0.0,1.0);
-    integrator_bins.integrate(image,image.resolution(),renderPbrt<10>(sampler, scenePbrt.GetCamera(), shapes, Point2i(w,h)), range);
+    NamedTextures textures = scenePbrt.CreateTextures();
+    std::map<int, pstd::vector<Light> *> shapeIndexToAreaLights;
+    std::vector<Light> lights =
+        scenePbrt.CreateLights(textures, &shapeIndexToAreaLights);
+    std::map<std::string, pbrt::Material> namedMaterials;
+    std::vector<pbrt::Material> materials;
+    scenePbrt.CreateMaterials(textures, &namedMaterials, &materials);
+    
+    std::unique_ptr<pbrt::Integrator> integratorP(
+        scenePbrt.CreateIntegrator(scenePbrt.GetCamera(), scenePbrt.GetSampler(), shapes, lights));
+    
+    pbrt::RayIntegrator* rayInt = dynamic_cast<pbrt::RayIntegrator*>(integratorP.get());
+
+    auto integrator_bins = viltrum::integrator_bins_monte_carlo_uniform(w*h*spp); //Probar con más samples
+    auto range = viltrum::range_all<30>(0.0,1.0);
+    
+    
+    //cout<<"a"<<endl;
+    integrator_bins.integrate(image,image.resolution(),renderPbrt(rayInt, scenePbrt.GetCamera(), scenePbrt.GetSampler(), spp, Point2i(w,h), scratchBuffer), range);
     std::stringstream filename;
 	filename<<"image.hdr";
 	image.save(filename.str());

@@ -84,7 +84,8 @@
         "utility": "cpp",
         "valarray": "cpp",
         "variant": "cpp",
-        "vector": "cpp"
+        "vector": "cpp",
+        "dense": "cpp"
     },
     "C_Cpp.errorSquiggles": "Disabled"
 }

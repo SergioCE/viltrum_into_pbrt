@@ -5,12 +5,12 @@
 #include <random>
 #include <array>
 #include <Eigen/Dense>
-#include "../sampler/viltrumSampler.h"
+//#include "../sampler/viltrumSampler.h"
 
 
 
-#ifndef Spectrum
-using Spectrum = Eigen::Array3f;
+#ifndef SpectrumVilt
+using SpectrumVilt = Eigen::Array3f;
 #endif
 
 using namespace std;
