@@ -44,7 +44,7 @@ int main(int argc, char *argv[]){
     auto integrator_bins = viltrum::integrator_bins_monte_carlo_uniform(w*h*spp); //Probar con más samples
     auto range = viltrum::range_all<30>(0.0,1.0);
     
-    
+
     //cout<<"a"<<endl;
     integrator_bins.integrate(image,image.resolution(),renderPbrt(rayInt, scenePbrt.GetCamera(), scenePbrt.GetSampler(), spp, Point2i(w,h), scratchBuffer), range);
     std::stringstream filename;
@@ -54,3 +54,5 @@ int main(int argc, char *argv[]){
     image.print();
     return 0;
 }
+
+
