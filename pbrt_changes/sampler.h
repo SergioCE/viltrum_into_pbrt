@@ -44,6 +44,7 @@ class Sampler
     : public TaggedPointer<  // Sampler Types
           PMJ02BNSampler, IndependentSampler, StratifiedSampler, HaltonSampler,
           PaddedSobolSampler, SobolSampler, ZSobolSampler, MLTSampler, DebugMLTSampler, ViltrumSamplerPbrt
+          //ViltrumSamplerPbrt<2>, ViltrumSamplerPbrt<3>, ViltrumSamplerPbrt<4>, ViltrumSamplerPbrt<5>, ViltrumSamplerPbrt<6>,
 
           > {
   public:

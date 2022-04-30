@@ -1,7 +1,7 @@
 #pragma once
 
 
-const int N=30;
+const int N=3;
 
 class ViltrumSamplerPbrt {                      //NOTA: Fijarse en este
   public:
@@ -24,7 +24,11 @@ class ViltrumSamplerPbrt {                      //NOTA: Fijarse en este
 
     Float Get1D() { 
         if(i < v.size()) return v[i++]; 
-        else return sampler.Get1D();
+        //else return sampler.Get1D();
+        else{
+          i=0;
+          return v[i++];
+        }
     }
     
     Point2f Get2D() { return {Get1D(), Get1D()}; }
