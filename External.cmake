@@ -19,7 +19,7 @@ add_custom_target(update)
 
 
 ExternalProject_Add(viltrum
-  GIT_REPOSITORY https://github.com/adolfomunoz/viltrum.git
+  GIT_REPOSITORY https://github.com/SergioCE/viltrum_DyadicNets.git
   SOURCE_DIR ${EXTERNAL_INSTALL_LOCATION}/viltrum
   GIT_TAG main
   UPDATE_DISCONNECTED 1
