@@ -4,6 +4,7 @@
 #include <viltrum/viltrum.h>
 #include "viltrum/utils/cimg-wrapper.h"
 #include "viltrum/quadrature/monte-carlo.h"
+#include "viltrum/quadrature/dyadic-nets.h"
 #include <pbrt/shapes.h>
 #include <pbrt/materials.h>
 #include <cmath>
@@ -53,13 +54,17 @@ int main(int argc, char *argv[]){
     else{
         pbrt::RayIntegrator* rayInt = dynamic_cast<pbrt::RayIntegrator*>(integratorP.get());
 
-        //auto integrator_bins = viltrum::integrator_bins_monte_carlo_uniform(resolution.x*resolution.y*spp); //Probar con más samples          MC
-        auto integrator_bins = viltrum::integrator_bins_per_bin(viltrum::integrator_monte_carlo_uniform(spp)); //Modificar integrator_monte_carlo_uniform
-        auto range = viltrum::range_all<3>(0.0,1.0);
+        //auto integrator_bins = viltrum::integrator_bins_stepper(viltrum::stepper_bins_per_bin(viltrum::stepper_monte_carlo_uniform()),spp);
+        
+        auto range = viltrum::range_all<100>(0.0,1.0);
+        
+        vector<Point2f> dims;
+        dims.push_back(Point2f(3,4));
+        dims.push_back(Point2f(6,7));
+        dims.push_back(Point2f(9,10));
+        //viltrum::stepper_monte_carlo_dyadic_uniform(dims,spp);
+        auto integrator_bins = viltrum::integrator_bins_stepper(viltrum::stepper_bins_per_bin(viltrum::stepper_monte_carlo_dyadic_uniform(dims,spp)),spp);
         integrator_bins.integrate(image,image.resolution(),renderPbrt(rayInt, camera, sampler, spp, resolution, scratchBuffer), range);
-
-
-
 
         /*int w = resolution.x;
         int h = resolution.y;
@@ -74,9 +79,19 @@ int main(int argc, char *argv[]){
         integrator_optimized_adaptive_stratified_control_variates(viltrum::trapezoidal,viltrum::trapezoidal,viltrum::error_single_dimension_size(error_rate), (spp_cv*w*h)/(3*3*2), spp - spp_cv, seed).integrate(image,image.resolution(),renderPbrt(rayInt, camera, sampler, spp, resolution, scratchBuffer), range);
         */
 
-        std::stringstream filename;
-        filename<<"image3.hdr";
-        image.save(filename.str());
+       string name = camera.GetFilm().GetFilename();
+       int x = sizeof(name);
+        for(int i = 0; i < x; i++) {
+            if(name[i] == '.') {
+                name = name.substr(0, i);
+                break;
+            }
+        }
+
+
+        std::string filename = name + "MC" + to_string(spp) + ".hdr";
+        //filename<<"image3.hdr";
+        image.save(filename);
         cout<<"\nDoing"<<endl;
         image.print();
         return 0;

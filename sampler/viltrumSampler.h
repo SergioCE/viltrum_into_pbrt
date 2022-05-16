@@ -1,12 +1,12 @@
 #pragma once
 
 
-const int N=3;
+const int N=100;
 
 class ViltrumSamplerPbrt {                      //NOTA: Fijarse en este
   public:
     // IndependentSampler Public Methods
-    ViltrumSamplerPbrt(const std::array<double,N>& x, pbrt::Sampler sampler, int spp) : spp_(spp), sampler(sampler), i(0), v(x){}
+    ViltrumSamplerPbrt(const std::array<double,N>& x, pbrt::Sampler sampler, int spp) : spp_(spp), sampler(sampler), j(0), i(0), v(x){}
 
     static constexpr const char *Name() { return "ViltrumSamplerPbrt"; }
 
@@ -23,12 +23,10 @@ class ViltrumSamplerPbrt {                      //NOTA: Fijarse en este
     }
 
     Float Get1D() { 
-        if(i < v.size()) return v[i++]; 
-        //else return sampler.Get1D();
-        else{
-          i=0;
+        if(i < v.size()){
           return v[i++];
-        }
+        }  
+        else return sampler.Get1D();
     }
     
     Point2f Get2D() { return {Get1D(), Get1D()}; }
@@ -46,5 +44,6 @@ class ViltrumSamplerPbrt {                      //NOTA: Fijarse en este
     int spp_;
     pbrt::Sampler sampler;                    //Sampler por referencia (todo aleatorios) o por copia (mismos siempre)
     std::size_t i;
+    std::size_t j;
     std::array<double,N> v;
 };

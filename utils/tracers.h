@@ -49,7 +49,8 @@ SpectrumVilt F(pbrt::Camera camera, pbrt::Sampler &sampler, pbrt::Point2i photoS
     
     pbrt::SampledWavelengths lambda = camera.GetFilm().SampleWavelengths(0.5);
     pbrt::Filter filter = camera.GetFilm().GetFilter();                                 //Mejor get2D
-    pbrt::CameraSample cameraSample = GetCameraSample(sampler, pbrt::Point2i(photoSize[0]*sampler.Get1D(),photoSize[1]*sampler.Get1D()), filter);       //Nota: Ver cómo la cámara genera el rayo
+    Point2f imgSample = sampler.Get2D();
+    pbrt::CameraSample cameraSample = GetCameraSample(sampler, pbrt::Point2i(photoSize[0]*imgSample[0],photoSize[1]*imgSample[1]), filter);       //Nota: Ver cómo la cámara genera el rayo
 
     // Generate camera ray for current sample
     pstd::optional<pbrt::CameraRayDifferential> cr = camera.GenerateRayDifferential(cameraSample, lambda);
