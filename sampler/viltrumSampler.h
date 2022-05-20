@@ -1,6 +1,5 @@
 #pragma once
 
-
 const int N=100;
 
 class ViltrumSamplerPbrt {                      //NOTA: Fijarse en este
@@ -23,10 +22,18 @@ class ViltrumSamplerPbrt {                      //NOTA: Fijarse en este
     }
 
     Float Get1D() { 
+      //std::cout<<i<<std::endl;
         if(i < v.size()){
           return v[i++];
         }  
-        else return sampler.Get1D();
+        else {
+          i++;
+          return sampler.Get1D();
+        }
+    }
+
+    Float Get1DSp(){
+      return sampler.Get1D();
     }
     
     Point2f Get2D() { return {Get1D(), Get1D()}; }
