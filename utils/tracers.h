@@ -21,7 +21,6 @@ class renderPbrt {                   //Wrapper para la función sphere
     public:
     SpectrumVilt operator()(const std::array<double,N>& x) const {
         pbrt::ViltrumSamplerPbrt samplerViltrum(x, samplerP, spp_);
-        pbrt::Sampler sampler = samplerViltrum.Clone(alloc);
         scratchBuffer.Reset();
         return F(camera_, samplerViltrum, photoSize, scratchBuffer, integrator_);
     };
@@ -49,11 +48,11 @@ SpectrumVilt F(pbrt::Camera camera, pbrt::ViltrumSamplerPbrt &samplerViltrum, pb
     pbrt::Allocator alloc;
     pbrt::Sampler sampler = samplerViltrum.Clone(alloc);
 
-    pbrt::SampledWavelengths lambda = camera.GetFilm().SampleWavelengths(samplerViltrum.Get1DSp());
+    pbrt::SampledWavelengths lambda = camera.GetFilm().SampleWavelengths(0.5); //samplerViltrum.Get1DSp());
     pbrt::Filter filter = camera.GetFilm().GetFilter();                                 //Mejor get2D
     //cout<<"PIXELES 2 SAMPLES"<<endl;
     Point2f imgSample = sampler.Get2D();
-    pbrt::CameraSample cameraSample = GetCameraSample(sampler, pbrt::Point2i(photoSize[0]*imgSample[0],photoSize[1]*imgSample[1]), filter);       //Nota: Ver cómo la cámara genera el rayo
+    pbrt::CameraSample cameraSample = GetCameraSample(*samplerViltrum.GetSampler(), pbrt::Point2i(photoSize[0]*imgSample[0],photoSize[1]*imgSample[1]), filter);       //Nota: Ver cómo la cámara genera el rayo
 
     // Generate camera ray for current sample
     pstd::optional<pbrt::CameraRayDifferential> cr = camera.GenerateRayDifferential(cameraSample, lambda);

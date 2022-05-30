@@ -57,7 +57,7 @@ int main(int argc, char *argv[]){
     viltrum::CImgWrapper<double> image(resolution.x,resolution.y);
 
 
-    pbrt::ScratchBuffer scratchBuffer(65536);
+    pbrt::ScratchBuffer scratchBuffer;
 
     
 
@@ -117,12 +117,21 @@ int main(int argc, char *argv[]){
 
         auto integrator_bins = viltrum::integrator_bins_stepper(viltrum::stepper_bins_per_bin(viltrum::stepper_monte_carlo_uniform()),spp);
         
-        auto range = viltrum::range_all<100>(0.0,1.0);
+        auto range = viltrum::range_all<200>(0.0,1.0);
         
         vector<array<float,2>> dims;
-        dims.push_back({8,9});
-        //dims.push_back({11,12});
-        //viltrum::stepper_monte_carlo_dyadic_uniform(dims,spp);
+        
+        dims.push_back({4,5});
+        dims.push_back({10,11});
+
+
+        /*
+        dims.push_back({8,9});            //PATH   Cornell box
+        //dims.push_back({9,10});            //PATH   ESCENA NEGRA          DIMS SIN GETSAMPLER
+        
+        dims.push_back({14,15});          //VOLPATH
+        */
+
         //auto integrator_bins = viltrum::integrator_bins_stepper(viltrum::stepper_bins_per_bin(viltrum::stepper_monte_carlo_dyadic_uniform(dims,spp)),spp);
         //sum += "D";
         integrator_bins.integrate(image,image.resolution(),renderPbrt(rayInt, camera, sampler, spp, resolution, scratchBuffer), range);

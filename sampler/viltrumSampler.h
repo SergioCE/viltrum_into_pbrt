@@ -1,6 +1,5 @@
 #pragma once
-
-const int N=100;
+const int N=200;
 
 class ViltrumSamplerPbrt {                      //NOTA: Fijarse en este
   public:
@@ -30,6 +29,10 @@ class ViltrumSamplerPbrt {                      //NOTA: Fijarse en este
           i++;
           return sampler.Get1D();
         }
+    }
+
+    Sampler* GetSampler(){
+      return &sampler;
     }
 
     Float Get1DSp(){
