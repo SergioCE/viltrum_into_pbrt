@@ -20,7 +20,7 @@ SpectrumVilt F(pbrt::Camera camera, pbrt::ViltrumSamplerPbrt &sampler, pbrt::Poi
 class renderPbrt {                   //Wrapper para la función sphere
     public:
     SpectrumVilt operator()(const std::array<double,N>& x) const {
-        pbrt::ViltrumSamplerPbrt samplerViltrum(x, samplerP, spp_);
+        pbrt::ViltrumSamplerPbrt samplerViltrum(x, samplerP, spp_, _2DOnly);
         scratchBuffer.Reset();
         return F(camera_, samplerViltrum, photoSize, scratchBuffer, integrator_);
     };
@@ -29,12 +29,14 @@ class renderPbrt {                   //Wrapper para la función sphere
         pbrt::Integrator integrator) : integrator(integrator) scratchBuffer(scratchBuffer), shapes_(shapes), photoSize(photoSize), camera_(camera) , samplerP(sampler){}
 */
     renderPbrt(pbrt::RayIntegrator* integrator, pbrt::Camera camera, pbrt::Sampler sampler, int spp, pbrt::Point2i photoSize, pbrt::ScratchBuffer &scratchBuffer
-            ): spp_(spp), integrator_(integrator), camera_(camera), samplerP(sampler), scratchBuffer(scratchBuffer), photoSize(photoSize){
+            ,bool _2DOnly_ = false, int repeatedDim_ = -1):_2DOnly(_2DOnly_), repeatedDim(repeatedDim_), spp_(spp), integrator_(integrator), camera_(camera), samplerP(sampler), scratchBuffer(scratchBuffer), photoSize(photoSize){
                 
     }
 
     private:
     int spp_;
+    bool _2DOnly;
+    int repeatedDim;
     pbrt::Allocator alloc;
     pbrt::RayIntegrator* integrator_;
     pbrt::ScratchBuffer &scratchBuffer;
@@ -53,7 +55,7 @@ SpectrumVilt F(pbrt::Camera camera, pbrt::ViltrumSamplerPbrt &samplerViltrum, pb
     //cout<<"PIXELES 2 SAMPLES"<<endl;
     Point2f imgSample = sampler.Get2D();
     pbrt::CameraSample cameraSample = GetCameraSample(*samplerViltrum.GetSampler(), pbrt::Point2i(photoSize[0]*imgSample[0],photoSize[1]*imgSample[1]), filter);       //Nota: Ver cómo la cámara genera el rayo
-
+    //pbrt::CameraSample cameraSample = GetCameraSample(sampler, pbrt::Point2i(photoSize[0]*imgSample[0],photoSize[1]*imgSample[1]), filter);       //Nota: Ver cómo la cámara genera el rayo
     // Generate camera ray for current sample
     pstd::optional<pbrt::CameraRayDifferential> cr = camera.GenerateRayDifferential(cameraSample, lambda);
     

@@ -12,6 +12,8 @@
 #include <iostream>
 #include <iomanip>
 #include <sstream>
+#include <time.h>
+#include <chrono>
 
 bool checkIntegrator(pbrt::Integrator* integrator);
 
@@ -52,6 +54,7 @@ int main(int argc, char *argv[]){
 // LO MIO
 
     pbrt::Point2i resolution = camera.GetFilm().FullResolution();
+    cout<<resolution[0]<<","<<resolution[1]<<endl;
     int spp = sampler.SamplesPerPixel();
 
     viltrum::CImgWrapper<double> image(resolution.x,resolution.y);
@@ -106,6 +109,12 @@ int main(int argc, char *argv[]){
 
     LOG_VERBOSE("Memory used after scene creation: %d", GetCurrentRSS());
 
+    unsigned t0, t1;
+ 
+    t0=clock();
+    auto start = std::chrono::high_resolution_clock::now();
+    
+
 
 
     if(!checkIntegrator(integratorP.get())){
@@ -115,15 +124,52 @@ int main(int argc, char *argv[]){
         string sum = "";
         pbrt::RayIntegrator* rayInt = dynamic_cast<pbrt::RayIntegrator*>(integratorP.get());
 
-        auto integrator_bins = viltrum::integrator_bins_stepper(viltrum::stepper_bins_per_bin(viltrum::stepper_monte_carlo_uniform()),spp);
-        
-        auto range = viltrum::range_all<200>(0.0,1.0);
-        
-        vector<array<float,2>> dims;
-        
-        dims.push_back({4,5});
-        dims.push_back({10,11});
+        auto range = viltrum::range_all<4>(0.0,1.0);
+        int option = 0;
 
+        if(option == 0){
+            auto integrator_bins = viltrum::integrator_bins_stepper(viltrum::stepper_bins_per_bin(viltrum::stepper_monte_carlo_uniform()),spp);
+            sum += "MC";
+            cout<<sum<<endl;
+            integrator_bins.integrate(image,image.resolution(),renderPbrt(rayInt, camera, sampler, spp, resolution, scratchBuffer, true), range);
+        }
+        else if(option == 1){
+            vector<array<float,2>> dims;
+            dims.push_back({2,3});  
+            //dims.push_back({4,5});  
+
+            auto integrator_bins = viltrum::integrator_bins_stepper(viltrum::stepper_bins_per_bin(viltrum::stepper_monte_carlo_dyadic_uniform(dims,spp)),spp);
+            sum += "DMC";
+            cout<<sum<<endl;
+            integrator_bins.integrate(image,image.resolution(),renderPbrt(rayInt, camera, sampler, spp, resolution, scratchBuffer, true), range);
+
+        }
+        else{
+            bool _2dOnly = true;
+            int repeatedDim = 2;    //Dims 2,3 will be just like 4,5
+            int dim = 4;
+            int bins = resolution.x*resolution.y;
+            unsigned long spp_cv = std::max(1UL,(unsigned long)(spp*(1.0/16.0)));
+            auto integrator_bins = integrator_optimized_perpixel_adaptive_stratified_control_variates(
+                viltrum::nested(viltrum::simpson,viltrum::trapezoidal), // nested rule, order 2 polynomials
+                viltrum::error_single_dimension_size(1.e-5), // error heuristic
+                spp_cv*bins/(2*std::pow(3, dim-1)), // number of adaptive iterations calculated from the spps
+                std::max(1UL,spp-spp_cv) // number of spps for the residual
+            );
+            sum += "CV6D";
+            cout<<sum<<endl;
+            integrator_bins.integrate(image,image.resolution(),renderPbrt(rayInt, camera, sampler, spp, resolution, scratchBuffer, _2dOnly, repeatedDim), range);
+
+        }
+        //
+        
+        
+        
+        
+        //dims.push_back({10,11});
+
+        //dims.push_back({4,5});
+        //dims.push_back({6,7});
 
         /*
         dims.push_back({8,9});            //PATH   Cornell box
@@ -131,11 +177,10 @@ int main(int argc, char *argv[]){
         
         dims.push_back({14,15});          //VOLPATH
         */
+        
 
-        //auto integrator_bins = viltrum::integrator_bins_stepper(viltrum::stepper_bins_per_bin(viltrum::stepper_monte_carlo_dyadic_uniform(dims,spp)),spp);
-        //sum += "D";
-        integrator_bins.integrate(image,image.resolution(),renderPbrt(rayInt, camera, sampler, spp, resolution, scratchBuffer), range);
-
+        
+        
         /*int w = resolution.x;
         int h = resolution.y;
         float cv_rate = 0.5;
@@ -158,9 +203,18 @@ int main(int argc, char *argv[]){
             }
         }
 
+        t1 = clock();
+        auto end = std::chrono::high_resolution_clock::now();
+ 
+        auto int_s = std::chrono::duration_cast<std::chrono::seconds>(end - start);
+        double time = (double(t1-t0)/CLOCKS_PER_SEC);
+        cout << "Execution Time: " << time << endl;
+        cout << "Execution Time 2: " << int_s.count() << endl;
 
-        std::string filename = name + sum + "MC" + to_string(spp) + ".hdr";
+
+        std::string filename = name + sum + to_string(spp) + ".hdr";
         //filename<<"image3.hdr";
+        cout<<"Generated image "<<filename<<endl;
         image.save(filename);
         cout<<"\nDoing"<<endl;
         image.print();

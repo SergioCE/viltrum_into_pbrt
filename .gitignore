@@ -14,8 +14,13 @@ Makefile
 cmake_install.cmake
 
 #images:
+*.pdf
+*.hdr
+*.jpg
 *.svg
 *.png
+
+scenes
 
 # Prerequisites
 *.d
