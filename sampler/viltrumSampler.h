@@ -4,7 +4,7 @@ const int N=4;
 class ViltrumSamplerPbrt {                      //NOTA: Fijarse en este
   public:
     // IndependentSampler Public Methods
-    ViltrumSamplerPbrt(const std::array<double,N>& x, pbrt::Sampler sampler, int spp, bool _2DOnly_ = false, int repeatedDim_ = -1) : _2DOnly(_2DOnly_), repeatedDim(repeatedDim_), spp_(spp), sampler(sampler), j(0), i(0), v(x){}
+    ViltrumSamplerPbrt(const std::array<float,N>& x, pbrt::Sampler sampler, int spp, bool _2DOnly_ = false, int repeatedDim_ = -1) : _2DOnly(_2DOnly_), repeatedDim(repeatedDim_), spp_(spp), sampler(sampler), j(0), i(0), v(x){}
 
     static constexpr const char *Name() { return "ViltrumSamplerPbrt"; }
 
@@ -81,5 +81,5 @@ class ViltrumSamplerPbrt {                      //NOTA: Fijarse en este
     pbrt::Sampler sampler;                    //Sampler por referencia (todo aleatorios) o por copia (mismos siempre)
     std::size_t i;
     std::size_t j;
-    std::array<double,N> v;
+    std::array<float,N> v;
 };

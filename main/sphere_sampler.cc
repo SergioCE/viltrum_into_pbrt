@@ -1,8 +1,8 @@
 #include "iostream"
 #include "../utils/spheres.h"
-#include <viltrum/viltrum.h>
-#include "viltrum/utils/cimg-wrapper.h"
-#include "viltrum/quadrature/monte-carlo.h"
+#include <viltrumDyadic/viltrum.h>
+#include "viltrumDyadic/utils/cimg-wrapper.h"
+#include "viltrumDyadic/quadrature/monte-carlo.h"
 
 using namespace std;
 

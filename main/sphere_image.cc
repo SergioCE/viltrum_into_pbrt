@@ -1,8 +1,8 @@
 #include "iostream"
 #include "../functions/functions.h"
-#include <viltrum/viltrum.h>
-#include "viltrum/utils/cimg-wrapper.h"
-#include "viltrum/quadrature/dyadic-nets.h"
+#include <viltrumDyadic/viltrum.h>
+#include "viltrumDyadic/utils/cimg-wrapper.h"
+#include "viltrumDyadic/quadrature/dyadic-nets.h"
 
 int main(){
     int w = 100;

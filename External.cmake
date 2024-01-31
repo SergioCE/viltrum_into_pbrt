@@ -18,8 +18,20 @@ add_custom_target(update)
 
 
 
-ExternalProject_Add(viltrum
+ExternalProject_Add(viltrumDyadic
   GIT_REPOSITORY https://github.com/SergioCE/viltrum_DyadicNets.git
+  SOURCE_DIR ${EXTERNAL_INSTALL_LOCATION}/viltrumDyadic
+  GIT_TAG main
+  UPDATE_DISCONNECTED 1
+  STEP_TARGETS update
+  BUILD_COMMAND ""
+  CONFIGURE_COMMAND ""
+  INSTALL_COMMAND ""
+)
+add_dependencies(update viltrumDyadic)
+
+ExternalProject_Add(viltrum
+  GIT_REPOSITORY https://github.com/adolfomunoz/viltrum.git
   SOURCE_DIR ${EXTERNAL_INSTALL_LOCATION}/viltrum
   GIT_TAG main
   UPDATE_DISCONNECTED 1
@@ -29,6 +41,7 @@ ExternalProject_Add(viltrum
   INSTALL_COMMAND ""
 )
 add_dependencies(update viltrum)
+
 
 
 

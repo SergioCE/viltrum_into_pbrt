@@ -12,25 +12,60 @@
 #include <pbrt/materials.h>
 #include "../utils/tracers.h"
 #include "../utils/parsePbrt.h"
+#include <unordered_map>
+#include <thread>
+#include <mutex>
 
 
+std::mutex mymutex;
+int numIds = 0;
+std::unordered_map<unsigned long int, int> threadIds;
+bool all_inserted = false;
 
-SpectrumVilt F(pbrt::Camera camera, pbrt::ViltrumSamplerPbrt &sampler, pbrt::Point2i photoSize, pbrt::ScratchBuffer &scratchBuffer, pbrt::RayIntegrator* integrator);
+SpectrumVilt F_parall(pbrt::Camera camera, pbrt::ViltrumSamplerPbrt &sampler, pbrt::Point2i photoSize, pbrt::ScratchBuffer &scratchBuffer, pbrt::RayIntegrator* integrator);
 
-class renderPbrt {                   //Wrapper para la función sphere
+class renderPbrt_parallel {                   //Wrapper para la función sphere
     public:
     SpectrumVilt operator()(const std::array<float,N>& x) const {
         pbrt::ViltrumSamplerPbrt samplerViltrum(x, samplerP, spp_, _2DOnly);
-        scratchBuffer.Reset();
-        return F(camera_, samplerViltrum, photoSize, scratchBuffer, integrator_);
+        //std::cout<<"Hi"<<std::endl;
+        int id;
+        unsigned long int thisThreadId = std::hash<std::thread::id>{}(std::this_thread::get_id());
+        
+
+        if(!all_inserted){
+            {
+                std::lock_guard<std::mutex> lock(mymutex);
+
+                auto it = threadIds.find(thisThreadId);
+                if(it == threadIds.end()){
+                    id=numIds;
+                    threadIds.insert({thisThreadId,numIds});
+                    std::cout<<"Id "<<numIds<<"assigned to "<<thisThreadId<<std::endl;
+                    for (const auto& pair : threadIds) {
+                        std::cout << "Key: " << pair.first << ", Value: " << pair.second << std::endl;
+                    }
+                    numIds++;
+                    if(numIds == numThreads) all_inserted=true;
+                }
+                else{
+                    id=it->second;
+                }
+            }
+        }
+        else{
+            auto it = threadIds.find(thisThreadId);
+            id=it->second;
+        }
+        
+        //std::cout<<id<<std::endl;
+        s_buffers[id].Reset();
+        return F_parall(camera_, samplerViltrum, photoSize, s_buffers[id], integrator_);
     };
-   /* renderPbrt(pbrt::IndependentSampler &sampler, pbrt::Camera camera, 
-        pbrt::Primitive shapes, pbrt::Point2i photoSize, pbrt::ScratchBuffer &scratchBuffer, 
-        pbrt::Integrator integrator) : integrator(integrator) scratchBuffer(scratchBuffer), shapes_(shapes), photoSize(photoSize), camera_(camera) , samplerP(sampler){}
-*/
-    renderPbrt(pbrt::RayIntegrator* integrator, pbrt::Camera camera, pbrt::Sampler sampler, int spp, pbrt::Point2i photoSize, pbrt::ScratchBuffer &scratchBuffer
-            ,bool _2DOnly_ = false, int repeatedDim_ = -1):_2DOnly(_2DOnly_), repeatedDim(repeatedDim_), spp_(spp), integrator_(integrator), camera_(camera), samplerP(sampler), scratchBuffer(scratchBuffer), photoSize(photoSize){
-                
+    
+    renderPbrt_parallel(pbrt::RayIntegrator* integrator, pbrt::Camera camera, pbrt::Sampler sampler, int spp, pbrt::Point2i photoSize
+            ,std::vector<pbrt::ScratchBuffer>& s_buffers_,bool _2DOnly_ = false, int repeatedDim_ = -1): s_buffers(s_buffers_), _2DOnly(_2DOnly_), repeatedDim(repeatedDim_), spp_(spp), integrator_(integrator), camera_(camera), samplerP(sampler), photoSize(photoSize){
+        
     }
 
     private:
@@ -39,14 +74,17 @@ class renderPbrt {                   //Wrapper para la función sphere
     int repeatedDim;
     pbrt::Allocator alloc;
     pbrt::RayIntegrator* integrator_;
-    pbrt::ScratchBuffer &scratchBuffer;
+    pbrt::ScratchBuffer *scratchBuffer;
     pbrt::Point2i photoSize;
     pbrt::Camera camera_;
     pbrt::Sampler &samplerP;
+
+    std::vector<pbrt::ScratchBuffer>& s_buffers;
+    unsigned int numThreads = std::thread::hardware_concurrency(); 
 };
 
 
-SpectrumVilt F(pbrt::Camera camera, pbrt::ViltrumSamplerPbrt &samplerViltrum, pbrt::Point2i photoSize, pbrt::ScratchBuffer &scratchBuffer, pbrt::RayIntegrator* integrator){
+SpectrumVilt F_parall(pbrt::Camera camera, pbrt::ViltrumSamplerPbrt &samplerViltrum, pbrt::Point2i photoSize, pbrt::ScratchBuffer &scratchBuffer, pbrt::RayIntegrator* integrator){
     pbrt::Allocator alloc;
     pbrt::Sampler sampler = samplerViltrum.Clone(alloc);
 
@@ -62,6 +100,8 @@ SpectrumVilt F(pbrt::Camera camera, pbrt::ViltrumSamplerPbrt &samplerViltrum, pb
     SampledSpectrum L(0.);
     VisibleSurface visibleSurface;
     if(cr){
+
+        //TODO: It's here!
         DCHECK_GT(Length(cameraRay->ray.d), .999f);
         DCHECK_LT(Length(cameraRay->ray.d), 1.001f);
         Float rayDiffScale =

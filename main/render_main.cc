@@ -1,10 +1,9 @@
 
 #include "../utils/tracers.h"
+#include "../utils/tracers_parallel.h"
 #include "../utils/parsePbrt.h"
-#include <viltrumDyadic/viltrum.h>
-#include "viltrumDyadic/utils/cimg-wrapper.h"
-#include "viltrumDyadic/quadrature/monte-carlo.h"
-#include "viltrumDyadic/quadrature/dyadic-nets.h"
+#include <viltrum/viltrum.h>
+#include <viltrum/utils/cimg-wrapper.h>
 #include <pbrt/shapes.h>
 #include <pbrt/materials.h>
 #include <cmath>
@@ -16,7 +15,6 @@
 #include <chrono>
 
 bool checkIntegrator(pbrt::Integrator* integrator);
-
 
 int main(int argc, char *argv[]){
 
@@ -68,7 +66,7 @@ int main(int argc, char *argv[]){
 
 
     pbrt::ScratchBuffer scratchBuffer;
-
+    
     
 
     // Helpful warnings
@@ -134,98 +132,58 @@ int main(int argc, char *argv[]){
         auto range = viltrum::range_all<4>(0.0,1.0);
         //int option = 0;
 
+        int bins = resolution.x*resolution.y;
+
         if(option == 0){
-            auto integrator_bins = viltrum::integrator_bins_stepper(viltrum::stepper_bins_per_bin(viltrum::stepper_monte_carlo_uniform()),spp);
+            //auto integrator_bins = viltrum::integrator_bins_stepper(viltrum::stepper_bins_per_bin(viltrum::stepper_monte_carlo_uniform()),spp);
             sum += "MC";
             cout<<sum<<endl;
-            integrator_bins.integrate(image,image.resolution(),renderPbrt(rayInt, camera, sampler, spp, resolution, scratchBuffer, true), range);
-            std::cout<<"a"<<std::endl;
-        }
-        else if(option == 1){
-            vector<array<float,2>> dims;
-            dims.push_back({2,3});  
-            //dims.push_back({4,5});  
-
-            auto integrator_bins = viltrum::integrator_bins_stepper(viltrum::stepper_bins_per_bin(viltrum::stepper_monte_carlo_dyadic_uniform(dims,spp)),spp);
-            sum += "DMC";
-            cout<<sum<<endl;
-            integrator_bins.integrate(image,image.resolution(),renderPbrt(rayInt, camera, sampler, spp, resolution, scratchBuffer, true), range);
-
-        }
-        else{
-            bool _2dOnly = true;
-            int repeatedDim = 2;    //Dims 2,3 will be just like 4,5
-            int dim = 4;
-            int bins = resolution.x*resolution.y;
-            unsigned long spp_cv = std::max(1UL,(unsigned long)(spp*(1.0/16.0)));
-            auto integrator_bins = integrator_optimized_perpixel_adaptive_stratified_control_variates(
-                viltrum::nested(viltrum::simpson,viltrum::trapezoidal), // nested rule, order 2 polynomials
-                viltrum::error_single_dimension_size(1.e-5), // error heuristic
-                spp_cv*bins/(2*std::pow(3, dim-1)), // number of adaptive iterations calculated from the spps
-                std::max(1UL,spp-spp_cv) // number of spps for the residual
-            );
-            sum += "CV4D";
-            cout<<sum<<endl;
-            integrator_bins.integrate(image,image.resolution(),renderPbrt(rayInt, camera, sampler, spp, resolution, scratchBuffer, _2dOnly, repeatedDim), range);
-
-        }
-        //
-        
-        
-        
-        
-        //dims.push_back({10,11});
-
-        //dims.push_back({4,5});
-        //dims.push_back({6,7});
-
-        /*
-        dims.push_back({8,9});            //PATH   Cornell box
-        //dims.push_back({9,10});            //PATH   ESCENA NEGRA          DIMS SIN GETSAMPLER
-        
-        dims.push_back({14,15});          //VOLPATH
-        */
-        
-
-        
-        
-        /*int w = resolution.x;
-        int h = resolution.y;
-        float cv_rate = 0.5;
-        unsigned long max_spp = 128;
-        unsigned long spp_pixel = 4;
-        float error_rate = 1.e-5f;
-        std::size_t seed = std::random_device()();
-        int slice_at_column = -1;
-        unsigned long spp_cv =spp-1;
-
-        integrator_optimized_adaptive_stratified_control_variates(viltrum::trapezoidal,viltrum::trapezoidal,viltrum::error_single_dimension_size(error_rate), (spp_cv*w*h)/(3*3*2), spp - spp_cv, seed).integrate(image,image.resolution(),renderPbrt(rayInt, camera, sampler, spp, resolution, scratchBuffer), range);
-        */
-
-       string name = camera.GetFilm().GetFilename();
-       int x = sizeof(name);
-        for(int i = 0; i < x; i++) {
-            if(name[i] == '.') {
-                name = name.substr(0, i);
-                break;
+            std::vector<std::vector<SpectrumVilt>> sol(resolution.x,std::vector<SpectrumVilt>(resolution.y,SpectrumVilt(0.0f)));
+            viltrum::LoggerProgress logger("Monte-Carlo parallel");
+            
+            unsigned int numThreads = std::thread::hardware_concurrency();
+            std::vector<pbrt::ScratchBuffer> s_buffers;
+            if (numThreads == 0) {
+                std::cout << "Unable to determine the number of threads supported by the hardware." << std::endl;
+            } else {
+                std::cout << "Number of concurrent threads supported by the hardware: " << numThreads << std::endl;
             }
+            for(int i=0;i<numThreads; i++){
+                s_buffers.emplace_back();
+            }   
+
+            integrate(viltrum::integrator_per_bin_parallel(viltrum::monte_carlo(spp)),sol,renderPbrt_parallel(rayInt, camera, sampler, spp, resolution, s_buffers, true),viltrum::range_primary<4>(),logger);
+            std::cout<<"finished"<<std::endl;
+
+            viltrum::LoggerProgress logger2("Monte-Carlo");
+            integrate(viltrum::integrator_per_bin(viltrum::monte_carlo(spp)),sol,renderPbrt(rayInt, camera, sampler, spp, resolution, scratchBuffer, true),viltrum::range_primary<4>(),logger2);
+            std::cout<<"finished"<<std::endl;
         }
 
-        t1 = clock();
-        auto end = std::chrono::high_resolution_clock::now();
+       //string name = camera.GetFilm().GetFilename();
+       //int x = sizeof(name);
+       // for(int i = 0; i < x; i++) {
+       //     if(name[i] == '.') {
+       //         name = name.substr(0, i);
+       //         break;
+       //     }
+       // }
+
+       // t1 = clock();
+       // auto end = std::chrono::high_resolution_clock::now();
  
-        auto int_s = std::chrono::duration_cast<std::chrono::seconds>(end - start);
-        double time = (double(t1-t0)/CLOCKS_PER_SEC);
-        cout << "Execution Time: " << time << endl;
-        cout << "Execution Time 2: " << int_s.count() << endl;
+       // auto int_s = std::chrono::duration_cast<std::chrono::seconds>(end - start);
+       // double time = (double(t1-t0)/CLOCKS_PER_SEC);
+       // cout << "Execution Time: " << time << endl;
+       // cout << "Execution Time 2: " << int_s.count() << endl;
 
 
-        std::string filename = name + sum + to_string(spp) + ".hdr";
-        //filename<<"image3.hdr";
-        cout<<"Generated image "<<filename<<endl;
-        image.save(filename);
-        cout<<"\nDoing"<<endl;
-        image.print();
+       // std::string filename = name + sum + to_string(spp) + ".hdr";
+       // //filename<<"image3.hdr";
+       // cout<<"Generated image "<<filename<<endl;
+       // image.save(filename);
+       // cout<<"\nDoing"<<endl;
+       // image.print();
         return 0;
     }
     
