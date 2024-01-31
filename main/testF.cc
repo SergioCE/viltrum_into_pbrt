@@ -19,8 +19,15 @@ bool checkIntegrator(pbrt::Integrator* integrator);
 
 
 int main(int argc, char *argv[]){
+
+    if(argc < 3){
+        std::cout<<"Please select an integration option"<<std::endl;
+        return 0;
+    }
+
+    int option = atoi(argv[1]);
     
-    std::vector<std::string> filenames = getScene(argc,argv);
+    std::vector<std::string> filenames = getScene(argc-1,&argv[1]);
     
     BasicScene scenePbrt;
     BasicSceneBuilder builder(&scenePbrt);
@@ -125,13 +132,14 @@ int main(int argc, char *argv[]){
         pbrt::RayIntegrator* rayInt = dynamic_cast<pbrt::RayIntegrator*>(integratorP.get());
 
         auto range = viltrum::range_all<4>(0.0,1.0);
-        int option = 0;
+        //int option = 0;
 
         if(option == 0){
             auto integrator_bins = viltrum::integrator_bins_stepper(viltrum::stepper_bins_per_bin(viltrum::stepper_monte_carlo_uniform()),spp);
             sum += "MC";
             cout<<sum<<endl;
             integrator_bins.integrate(image,image.resolution(),renderPbrt(rayInt, camera, sampler, spp, resolution, scratchBuffer, true), range);
+            std::cout<<"a"<<std::endl;
         }
         else if(option == 1){
             vector<array<float,2>> dims;
@@ -156,7 +164,7 @@ int main(int argc, char *argv[]){
                 spp_cv*bins/(2*std::pow(3, dim-1)), // number of adaptive iterations calculated from the spps
                 std::max(1UL,spp-spp_cv) // number of spps for the residual
             );
-            sum += "CV6D";
+            sum += "CV4D";
             cout<<sum<<endl;
             integrator_bins.integrate(image,image.resolution(),renderPbrt(rayInt, camera, sampler, spp, resolution, scratchBuffer, _2dOnly, repeatedDim), range);
 

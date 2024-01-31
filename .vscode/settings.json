@@ -85,7 +85,17 @@
         "valarray": "cpp",
         "variant": "cpp",
         "vector": "cpp",
-        "dense": "cpp"
+        "dense": "cpp",
+        "strstream": "cpp",
+        "*.tcc": "cpp",
+        "compare": "cpp",
+        "concepts": "cpp",
+        "memory_resource": "cpp",
+        "hash_map": "cpp",
+        "numbers": "cpp",
+        "semaphore": "cpp",
+        "stop_token": "cpp",
+        "cfenv": "cpp"
     },
     "C_Cpp.errorSquiggles": "Disabled"
 }
