@@ -30,7 +30,6 @@ class renderPbrt_parallel {                   //Wrapper para la función sphere
     public:
     SpectrumVilt operator()(const std::array<float,N>& x) const {
         pbrt::ViltrumSamplerPbrt samplerViltrum(x, samplerP, spp_, _2DOnly);
-        //std::cout<<"Hi"<<std::endl;
         int id;
         unsigned long int thisThreadId = std::hash<std::thread::id>{}(std::this_thread::get_id());
         
@@ -43,10 +42,10 @@ class renderPbrt_parallel {                   //Wrapper para la función sphere
                 if(it == threadIds.end()){
                     myId=numIds;
                     threadIds.insert({thisThreadId,numIds});
-                    std::cout<<"Id "<<numIds<<"assigned to "<<thisThreadId<<std::endl;
-                    for (const auto& pair : threadIds) {
-                        std::cout << "Key: " << pair.first << ", Value: " << pair.second << std::endl;
-                    }
+                    //std::cout<<"Id "<<numIds<<"assigned to "<<thisThreadId<<std::endl;
+                    //for (const auto& pair : threadIds) {
+                    //    std::cout << "Key: " << pair.first << ", Value: " << pair.second << std::endl;
+                    //}
                     numIds++;
                     if(numIds == numThreads) all_inserted=true;
                 }
