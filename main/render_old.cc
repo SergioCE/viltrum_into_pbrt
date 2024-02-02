@@ -135,11 +135,12 @@ int main(int argc, char *argv[]){
         //int option = 0;
 
         if(option == 0){
+            //Monte Carlo samples are readen from the .pbrt scene file
             auto integrator_bins = viltrum::integrator_bins_stepper(viltrum::stepper_bins_per_bin(viltrum::stepper_monte_carlo_uniform()),spp);
             sum += "MC";
             cout<<sum<<endl;
             integrator_bins.integrate(image,image.resolution(),renderPbrt(rayInt, camera, sampler, spp, resolution, scratchBuffer, true), range);
-            std::cout<<"a"<<std::endl;
+            
         }
         else if(option == 1){
             //Dimensions integrated with dyadic nets
@@ -170,38 +171,7 @@ int main(int argc, char *argv[]){
             integrator_bins.integrate(image,image.resolution(),renderPbrt(rayInt, camera, sampler, spp, resolution, scratchBuffer, _2dOnly, repeatedDim), range);
 
         }
-        //
         
-        
-        
-        
-        //dims.push_back({10,11});
-
-        //dims.push_back({4,5});
-        //dims.push_back({6,7});
-
-        /*
-        dims.push_back({8,9});            //PATH   Cornell box
-        //dims.push_back({9,10});            //PATH   ESCENA NEGRA          DIMS SIN GETSAMPLER
-        
-        dims.push_back({14,15});          //VOLPATH
-        */
-        
-
-        
-        
-        /*int w = resolution.x;
-        int h = resolution.y;
-        float cv_rate = 0.5;
-        unsigned long max_spp = 128;
-        unsigned long spp_pixel = 4;
-        float error_rate = 1.e-5f;
-        std::size_t seed = std::random_device()();
-        int slice_at_column = -1;
-        unsigned long spp_cv =spp-1;
-
-        integrator_optimized_adaptive_stratified_control_variates(viltrum::trapezoidal,viltrum::trapezoidal,viltrum::error_single_dimension_size(error_rate), (spp_cv*w*h)/(3*3*2), spp - spp_cv, seed).integrate(image,image.resolution(),renderPbrt(rayInt, camera, sampler, spp, resolution, scratchBuffer), range);
-        */
 
        string name = camera.GetFilm().GetFilename();
        int x = sizeof(name);

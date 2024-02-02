@@ -137,23 +137,25 @@ int main(int argc, char *argv[]){
         //Solution
         std::vector<std::vector<SpectrumVilt>> sol(resolution.x,std::vector<SpectrumVilt>(resolution.y,SpectrumVilt(0.0f)));
 
+        //Scratch buffers for parallel algorithms
+        unsigned int numThreads = std::thread::hardware_concurrency();
+        std::vector<pbrt::ScratchBuffer> s_buffers;
+        if (numThreads == 0) {
+            std::cout << "Unable to determine the number of threads supported by the hardware." << std::endl;
+        } else {
+            std::cout << "Number of concurrent threads supported by the hardware: " << numThreads << std::endl;
+        }
+        for(int i=0;i<numThreads; i++){
+            s_buffers.emplace_back(pbrt::ScratchBuffer(32));
+        }   
+
         if(option == 0){
-            //auto integrator_bins = viltrum::integrator_bins_stepper(viltrum::stepper_bins_per_bin(viltrum::stepper_monte_carlo_uniform()),spp);
+            //Monte Carlo samples are readen from the .pbrt scene file
+            
             sum += "MC";
             cout<<sum<<endl;
             
             viltrum::LoggerProgress logger("Monte-Carlo parallel");
-            
-            unsigned int numThreads = std::thread::hardware_concurrency();
-            std::vector<pbrt::ScratchBuffer> s_buffers;
-            if (numThreads == 0) {
-                std::cout << "Unable to determine the number of threads supported by the hardware." << std::endl;
-            } else {
-                std::cout << "Number of concurrent threads supported by the hardware: " << numThreads << std::endl;
-            }
-            for(int i=0;i<numThreads; i++){
-                s_buffers.emplace_back(pbrt::ScratchBuffer(32));
-            }   
 
             integrate(viltrum::integrator_per_bin_parallel(viltrum::monte_carlo(spp)),sol,renderPbrt_parallel(rayInt, camera, sampler, spp, resolution, s_buffers, true),viltrum::range_primary<4>(),logger);
             std::cout<<"finished"<<std::endl;
@@ -163,6 +165,35 @@ int main(int argc, char *argv[]){
             //integrate(viltrum::integrator_per_bin(viltrum::monte_carlo(spp)),sol,renderPbrt(rayInt, camera, sampler, spp, resolution, scratchBuffer, true),viltrum::range_primary<4>(),logger2);
             //std::cout<<"finished"<<std::endl;
         }
+        else if (option==1){
+            //With these parameters we use the newton cotes algorithm in camera space dimensions and direct light dimensions
+            bool _2dOnly = true;     //Only get samples when pbrt ask for 2 samples (dimensions 2,3 and 4,5)
+            int repeatedDim = 2;    //Dims 2,3 will be just like 4,5
+            int dim = 4;
+            int bins = resolution.x*resolution.y;
+
+            sum += "NC";
+            cout<<sum<<endl;
+
+            viltrum::LoggerProgress logger("Parallel trapezoids");
+
+            integrate(viltrum::integrator_newton_cotes_parallel(viltrum::steps<16*2>(viltrum::trapezoidal)),sol,renderPbrt_parallel(rayInt, camera, sampler, spp, resolution, s_buffers, _2dOnly, repeatedDim),viltrum::range_primary<4>(),logger);
+        }
+        else if (option==2){
+            //With these parameters we use the newton cotes algorithm in camera space dimensions and direct light dimensions
+            bool _2dOnly = true;     //Only get samples when pbrt ask for 2 samples (dimensions 2,3 and 4,5)
+            int repeatedDim = 2;    //Dims 2,3 will be just like 4,5
+            int dim = 4;
+            int bins = resolution.x*resolution.y;
+
+            sum += "Adaptive";
+            cout<<sum<<endl;
+
+            viltrum::LoggerProgress logger("Parallel adaptive");
+
+            integrate(viltrum::integrator_adaptive_iterations_parallel(viltrum::nested(viltrum::simpson,viltrum::trapezoidal),200000),sol,renderPbrt_parallel(rayInt, camera, sampler, spp, resolution, s_buffers, _2dOnly, repeatedDim),viltrum::range_primary<4>(),logger);
+        }
+
 
        string name = camera.GetFilm().GetFilename();
        int x = sizeof(name);
