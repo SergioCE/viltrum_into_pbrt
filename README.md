@@ -16,4 +16,4 @@ Execution instructions:
 
 Scenes:
     Uploaded a scenes folder, I've only tried it with redSphere and cornelBox, but it should work with any other scene of the folder.
-    Use the path to the .pbrt file.
+    I uploaded a scenes zip to google drive: https://drive.google.com/file/d/135p-uCG-NGDXegVbHDrJO_sdtvY3Sry3/view?usp=sharing
