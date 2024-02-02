@@ -173,12 +173,12 @@ int main(int argc, char *argv[]){
             }
         }
 
-        cimg_library::CImg<float> image(resolution.x, resolution.y, 3);
+        cimg_library::CImg<float> image(resolution.x, resolution.y, 1, 3);
 
         for(int i=0; i<resolution.x; i++){
             for(int j=0; j<resolution.y; j++){
                 for(int k=0; k<3; k++){
-                    image(i,j,k) = sol[i][j][k];
+                    image(i,j,0,k) = sol[i][j][k];
                 }
             }
         }
