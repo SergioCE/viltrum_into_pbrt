@@ -13,23 +13,19 @@ find_package(OpenEXR REQUIRED)
 # Find the zlib package
 find_package(ZLIB REQUIRED)
 
-include_directories(external/pbrt/src external/pbrt/src/ext/ external/pbrt/src/ext/openvdb/nanovdb external/pbrt/src/ext/utf8proc
-external/pbrt/src/ext/libdeflate external/pbrt/src/ext/filesystem external/pbrt/src/ext/openexr/OpenEXR/IlmImf external/pbrt/build/src/ext/openexr/OpenEXR/config
-external/pbrt/src/ext/openexr/IlmBase/Iex external/pbrt/build/src/ext/openexr/IlmBase/config external/pbrt/src/ext/openexr/IlmBase/Imath
-external/pbrt/src/ext/openexr/IlmBase/Half external/pbrt/src/ext/double-conversion/ ${OpenEXR_INCLUDE_DIRS} ${ZLIB_INCLUDE_DIRS})
+include_directories(external/pbrt/src external/pbrt/src/ext/openvdb/nanovdb ${OpenEXR_INCLUDE_DIRS} ${ZLIB_INCLUDE_DIRS})
 
 
-#add_executable(testF main/testF.cc )
+add_executable(render_old main/render_old.cc )
 
-add_executable(render main/render_main.cc )
+add_executable(render_new main/render_new.cc )
 
-#add_executable(pbrtPrueba main/pbrtMain.cc )
 
-#target_compile_options(testF PRIVATE
-#    -w  # Disable all warnings
-#)
+target_compile_options(render_new PRIVATE
+    -w  # Disable all warnings
+)
 
-target_compile_options(render PRIVATE
+target_compile_options(render_old PRIVATE
     -w  # Disable all warnings
 )
 
@@ -43,20 +39,8 @@ find_package(ZLIB REQUIRED)
 find_package(TBB REQUIRED)
 
 
-#target_link_libraries(pbrtPrueba ${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/libsky_lib.a
-#${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/libpbrt_lib.a
-#${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/src/ext/libdeflate/libdeflate.a
-#${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/src/ext/utf8proc/libutf8proc.a
-#${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/src/ext/glfw/src/libglfw3.a
-#${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/src/ext/glad/libglad.a
-#${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/src/ext/ptex/src/ptex/libPtex.a
-#${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/src/ext/libflip_lib.a
-#${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/src/ext/double-conversion/libdouble-conversion.a 
-#/usr/lib/x86_64-linux-gnu/libIlmImf-2_5.so.25.0.6 ${OpenEXR_LIBRARIES} ${ZLIB_LIBRARIES} OpenEXR::IlmImf)
 
-
-
-target_link_libraries(render ${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/libsky_lib.a
+target_link_libraries(render_new ${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/libsky_lib.a
 ${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/libpbrt_lib.a
 ${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/src/ext/libdeflate/libdeflate.a
 ${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/src/ext/utf8proc/libutf8proc.a
@@ -65,39 +49,16 @@ ${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/src/ext/glad/libgla
 ${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/src/ext/ptex/src/ptex/libPtex.a
 ${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/src/ext/libflip_lib.a
 ${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/src/ext/double-conversion/libdouble-conversion.a 
-/usr/lib/x86_64-linux-gnu/libIlmImf-2_5.so.25.0.6 ${OpenEXR_LIBRARIES} ${ZLIB_LIBRARIES} OpenEXR::IlmImf TBB::tbb)
+ ${OpenEXR_LIBRARIES} ${ZLIB_LIBRARIES} OpenEXR::IlmImf TBB::tbb)
 
 
-#target_link_libraries(testF ${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/libsky_lib.a
-#${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/libpbrt_lib.a
-#${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/src/ext/libdeflate/libdeflate.a
-#${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/src/ext/utf8proc/libutf8proc.a
-#${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/src/ext/glfw/src/libglfw3.a
-#${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/src/ext/glad/libglad.a
-#${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/src/ext/ptex/src/ptex/libPtex.a
-#${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/src/ext/libflip_lib.a
-#${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/src/ext/double-conversion/libdouble-conversion.a 
-#/usr/lib/x86_64-linux-gnu/libIlmImf-2_5.so.25.0.6 ${OpenEXR_LIBRARIES} ${ZLIB_LIBRARIES} OpenEXR::IlmImf)
-#libIexMath-2_5.a libIlmImfUtil-2_5.a libdouble-conversion.a /Users/sergiocartiel/Desktop/renderInternship/viltrum_into_pbrt/build/pbrt-prefix/src/pbrt-build/src/ext/zlib/libz.a
-
-#target_link_libraries(pbrtPrueba ${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/libpbrt_lib.a ${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/libsky_lib.a
-#${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/src/ext/libdeflate/libdeflate.a ${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/src/ext/utf8proc/libutf8proc.a
-#${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/src/ext/openexr/OpenEXR/IlmImf/libIlmImf-2_5.a ${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/src/ext/openexr/IlmBase/Half/libHalf-2_5.a
-#${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/src/ext/openexr/IlmBase/Iex/libIex-2_5.a  ${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/src/ext/openexr/IlmBase/IlmThread/libIlmThread-2_5.a
-#${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/src/ext/openexr/IlmBase/Imath/libImath-2_5.a  ${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/src/ext/double-conversion/libdouble-conversion.a
-#${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/src/ext/ptex/src/ptex/libPtex.a  /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk/usr/lib/libz.tbd 
-#${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/src/ext/glad/libglad.a  ${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/src/ext/glfw/src/libglfw3.a
-#${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/src/ext/openexr/IlmBase/IexMath/libIexMath-2_5.a   ${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/src/ext/double-conversion/libdouble-conversion.a
-#${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/src/ext/libflip_lib.a  ${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/src/ext/openexr/OpenEXR/IlmImfUtil/libIlmImfUtil-2_5.a)
-#
-#
-#target_link_libraries(testF ${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/libpbrt_lib.a ${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/libsky_lib.a
-#${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/src/ext/libdeflate/libdeflate.a ${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/src/ext/utf8proc/libutf8proc.a
-#${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/src/ext/openexr/OpenEXR/IlmImf/libIlmImf-2_5.a ${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/src/ext/openexr/IlmBase/Half/libHalf-2_5.a
-#${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/src/ext/openexr/IlmBase/Iex/libIex-2_5.a  ${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/src/ext/openexr/IlmBase/IlmThread/libIlmThread-2_5.a
-#${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/src/ext/openexr/IlmBase/Imath/libImath-2_5.a  ${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/src/ext/double-conversion/libdouble-conversion.a
-#${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/src/ext/ptex/src/ptex/libPtex.a  /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk/usr/lib/libz.tbd 
-#${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/src/ext/glad/libglad.a  ${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/src/ext/glfw/src/libglfw3.a
-#${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/src/ext/openexr/IlmBase/IexMath/libIexMath-2_5.a   ${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/src/ext/double-conversion/libdouble-conversion.a
-#${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/src/ext/libflip_lib.a  ${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/src/ext/openexr/OpenEXR/IlmImfUtil/libIlmImfUtil-2_5.a)
-#libIexMath-2_5.a libIlmImfUtil-2_5.a libdouble-conversion.a /Users/sergiocartiel/Desktop/renderInternship/viltrum_into_pbrt/build/pbrt-prefix/src/pbrt-build/src/ext/zlib/libz.a
+target_link_libraries(render_old ${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/libsky_lib.a
+${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/libpbrt_lib.a
+${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/src/ext/libdeflate/libdeflate.a
+${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/src/ext/utf8proc/libutf8proc.a
+${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/src/ext/glfw/src/libglfw3.a
+${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/src/ext/glad/libglad.a
+${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/src/ext/ptex/src/ptex/libPtex.a
+${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/src/ext/libflip_lib.a
+${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/src/ext/double-conversion/libdouble-conversion.a 
+ ${OpenEXR_LIBRARIES} ${ZLIB_LIBRARIES} OpenEXR::IlmImf TBB::tbb)

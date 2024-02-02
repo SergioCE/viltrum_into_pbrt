@@ -13,6 +13,7 @@
 #include <sstream>
 #include <time.h>
 #include <chrono>
+#include <CImg.h>
 
 bool checkIntegrator(pbrt::Integrator* integrator);
 
@@ -56,18 +57,15 @@ int main(int argc, char *argv[]){
 
     std::unique_ptr<Integrator> integratorP(
         scenePbrt.CreateIntegrator(camera, sampler, accel, lights));
-// LO MIO
+
 
     pbrt::Point2i resolution = camera.GetFilm().FullResolution();
     cout<<resolution[0]<<","<<resolution[1]<<endl;
     int spp = sampler.SamplesPerPixel();
 
-    viltrum::CImgWrapper<double> image(resolution.x,resolution.y);
-
 
     pbrt::ScratchBuffer scratchBuffer;
-    
-    
+
 
     // Helpful warnings
     bool haveScatteringMedia = false;
@@ -126,19 +124,24 @@ int main(int argc, char *argv[]){
         return 0;
     }
     else{
+        //Here starts viltrum integration
+
+        //For the name of the image
         string sum = "";
         pbrt::RayIntegrator* rayInt = dynamic_cast<pbrt::RayIntegrator*>(integratorP.get());
 
         auto range = viltrum::range_all<4>(0.0,1.0);
-        //int option = 0;
 
         int bins = resolution.x*resolution.y;
+
+        //Solution
+        std::vector<std::vector<SpectrumVilt>> sol(resolution.x,std::vector<SpectrumVilt>(resolution.y,SpectrumVilt(0.0f)));
 
         if(option == 0){
             //auto integrator_bins = viltrum::integrator_bins_stepper(viltrum::stepper_bins_per_bin(viltrum::stepper_monte_carlo_uniform()),spp);
             sum += "MC";
             cout<<sum<<endl;
-            std::vector<std::vector<SpectrumVilt>> sol(resolution.x,std::vector<SpectrumVilt>(resolution.y,SpectrumVilt(0.0f)));
+            
             viltrum::LoggerProgress logger("Monte-Carlo parallel");
             
             unsigned int numThreads = std::thread::hardware_concurrency();
@@ -149,41 +152,43 @@ int main(int argc, char *argv[]){
                 std::cout << "Number of concurrent threads supported by the hardware: " << numThreads << std::endl;
             }
             for(int i=0;i<numThreads; i++){
-                s_buffers.emplace_back();
+                s_buffers.emplace_back(pbrt::ScratchBuffer(32));
             }   
 
             integrate(viltrum::integrator_per_bin_parallel(viltrum::monte_carlo(spp)),sol,renderPbrt_parallel(rayInt, camera, sampler, spp, resolution, s_buffers, true),viltrum::range_primary<4>(),logger);
             std::cout<<"finished"<<std::endl;
 
-            viltrum::LoggerProgress logger2("Monte-Carlo");
-            integrate(viltrum::integrator_per_bin(viltrum::monte_carlo(spp)),sol,renderPbrt(rayInt, camera, sampler, spp, resolution, scratchBuffer, true),viltrum::range_primary<4>(),logger2);
-            std::cout<<"finished"<<std::endl;
+            //Not parallel 
+            //viltrum::LoggerProgress logger2("Monte-Carlo");
+            //integrate(viltrum::integrator_per_bin(viltrum::monte_carlo(spp)),sol,renderPbrt(rayInt, camera, sampler, spp, resolution, scratchBuffer, true),viltrum::range_primary<4>(),logger2);
+            //std::cout<<"finished"<<std::endl;
         }
 
-       //string name = camera.GetFilm().GetFilename();
-       //int x = sizeof(name);
-       // for(int i = 0; i < x; i++) {
-       //     if(name[i] == '.') {
-       //         name = name.substr(0, i);
-       //         break;
-       //     }
-       // }
+       string name = camera.GetFilm().GetFilename();
+       int x = sizeof(name);
+        for(int i = 0; i < x; i++) {
+            if(name[i] == '.') {
+                name = name.substr(0, i);
+                break;
+            }
+        }
 
-       // t1 = clock();
-       // auto end = std::chrono::high_resolution_clock::now();
- 
-       // auto int_s = std::chrono::duration_cast<std::chrono::seconds>(end - start);
-       // double time = (double(t1-t0)/CLOCKS_PER_SEC);
-       // cout << "Execution Time: " << time << endl;
-       // cout << "Execution Time 2: " << int_s.count() << endl;
+        cimg_library::CImg<float> image(resolution.x, resolution.y, 3);
 
+        for(int i=0; i<resolution.x; i++){
+            for(int j=0; j<resolution.y; j++){
+                for(int k=0; k<3; k++){
+                    image(i,j,k) = sol[i][j][k];
+                }
+            }
+        }
 
-       // std::string filename = name + sum + to_string(spp) + ".hdr";
-       // //filename<<"image3.hdr";
-       // cout<<"Generated image "<<filename<<endl;
-       // image.save(filename);
-       // cout<<"\nDoing"<<endl;
-       // image.print();
+        std::string filename = name + sum + to_string(spp) + ".hdr";
+        //filename<<"image3.hdr";
+        cout<<"Generated image "<<filename<<endl;
+        image.save(filename.c_str());
+        cout<<"\nDoing"<<endl;
+        image.print();
         return 0;
     }
     

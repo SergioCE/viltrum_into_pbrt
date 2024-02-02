@@ -22,7 +22,9 @@ int numIds = 0;
 std::unordered_map<unsigned long int, int> threadIds;
 bool all_inserted = false;
 
-SpectrumVilt F_parall(pbrt::Camera camera, pbrt::ViltrumSamplerPbrt &sampler, pbrt::Point2i photoSize, pbrt::ScratchBuffer &scratchBuffer, pbrt::RayIntegrator* integrator);
+thread_local int myId = -1;
+
+SpectrumVilt F_parall(const pbrt::Camera& camera, pbrt::ViltrumSamplerPbrt &samplerViltrum, const pbrt::Point2i& photoSize, pbrt::ScratchBuffer &scratchBuffer, pbrt::RayIntegrator* integrator);
 
 class renderPbrt_parallel {                   //Wrapper para la función sphere
     public:
@@ -39,7 +41,7 @@ class renderPbrt_parallel {                   //Wrapper para la función sphere
 
                 auto it = threadIds.find(thisThreadId);
                 if(it == threadIds.end()){
-                    id=numIds;
+                    myId=numIds;
                     threadIds.insert({thisThreadId,numIds});
                     std::cout<<"Id "<<numIds<<"assigned to "<<thisThreadId<<std::endl;
                     for (const auto& pair : threadIds) {
@@ -48,16 +50,9 @@ class renderPbrt_parallel {                   //Wrapper para la función sphere
                     numIds++;
                     if(numIds == numThreads) all_inserted=true;
                 }
-                else{
-                    id=it->second;
-                }
             }
         }
-        else{
-            auto it = threadIds.find(thisThreadId);
-            id=it->second;
-        }
-        
+        id=myId;
         //std::cout<<id<<std::endl;
         s_buffers[id].Reset();
         return F_parall(camera_, samplerViltrum, photoSize, s_buffers[id], integrator_);
@@ -84,7 +79,7 @@ class renderPbrt_parallel {                   //Wrapper para la función sphere
 };
 
 
-SpectrumVilt F_parall(pbrt::Camera camera, pbrt::ViltrumSamplerPbrt &samplerViltrum, pbrt::Point2i photoSize, pbrt::ScratchBuffer &scratchBuffer, pbrt::RayIntegrator* integrator){
+SpectrumVilt F_parall(const pbrt::Camera& camera, pbrt::ViltrumSamplerPbrt &samplerViltrum, const pbrt::Point2i& photoSize, pbrt::ScratchBuffer &scratchBuffer, pbrt::RayIntegrator* integrator){
     pbrt::Allocator alloc;
     pbrt::Sampler sampler = samplerViltrum.Clone(alloc);
 

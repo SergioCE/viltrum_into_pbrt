@@ -9,7 +9,7 @@ svg-cpp-plot-prefix/
 CmakeCache.txt
 CmakeSettings.json
 photos
-
+scenes
 Makefile
 cmake_install.cmake
 
@@ -20,7 +20,6 @@ cmake_install.cmake
 *.svg
 *.png
 
-scenes
 
 # Prerequisites
 *.d

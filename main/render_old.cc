@@ -64,7 +64,7 @@ int main(int argc, char *argv[]){
     cout<<resolution[0]<<","<<resolution[1]<<endl;
     int spp = sampler.SamplesPerPixel();
 
-    viltrum::CImgWrapper<double> image(resolution.x,resolution.y);
+    viltrum::CImgWrapper<float> image(resolution.x,resolution.y);
 
 
     pbrt::ScratchBuffer scratchBuffer;
@@ -131,7 +131,7 @@ int main(int argc, char *argv[]){
         string sum = "";
         pbrt::RayIntegrator* rayInt = dynamic_cast<pbrt::RayIntegrator*>(integratorP.get());
 
-        auto range = viltrum::range_all<4>(0.0,1.0);
+        auto range = viltrum::range_all<4>(0.0f,1.0f);
         //int option = 0;
 
         if(option == 0){
@@ -142,18 +142,19 @@ int main(int argc, char *argv[]){
             std::cout<<"a"<<std::endl;
         }
         else if(option == 1){
+            //Dimensions integrated with dyadic nets
             vector<array<float,2>> dims;
-            dims.push_back({2,3});  
-            //dims.push_back({4,5});  
-
-            auto integrator_bins = viltrum::integrator_bins_stepper(viltrum::stepper_bins_per_bin(viltrum::stepper_monte_carlo_dyadic_uniform(dims,spp)),spp);
+            dims.push_back({2,3});      //Primary space   
+            dims.push_back({4,5});      //First intersection
+            string dyadic_nets_folder = "../external/viltrumDyadic/utils/Blue-Nets/";
+            auto integrator_bins = viltrum::integrator_bins_stepper(viltrum::stepper_bins_per_bin(viltrum::stepper_monte_carlo_dyadic_uniform(dims,spp,dyadic_nets_folder)),spp);
             sum += "DMC";
             cout<<sum<<endl;
             integrator_bins.integrate(image,image.resolution(),renderPbrt(rayInt, camera, sampler, spp, resolution, scratchBuffer, true), range);
 
         }
         else{
-            bool _2dOnly = true;
+            bool _2dOnly = true;     //Only get samples when pbrt ask for 2 samples (dimensions 2,3 and 4,5)
             int repeatedDim = 2;    //Dims 2,3 will be just like 4,5
             int dim = 4;
             int bins = resolution.x*resolution.y;
