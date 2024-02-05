@@ -28,7 +28,7 @@ ExternalProject_Add(viltrumDyadic
   CONFIGURE_COMMAND ""
   INSTALL_COMMAND ""
 )
-add_dependencies(update viltrumDyadic)
+add_dependencies(update viltrumDyadic-update)
 
 ExternalProject_Add(viltrum
   GIT_REPOSITORY https://github.com/adolfomunoz/viltrum.git
@@ -40,7 +40,7 @@ ExternalProject_Add(viltrum
   CONFIGURE_COMMAND ""
   INSTALL_COMMAND ""
 )
-add_dependencies(update viltrum)
+add_dependencies(update viltrum-update)
 
 
 
@@ -90,7 +90,7 @@ ExternalProject_Add(pbrt
   #CONFIGURE_COMMAND ""
   INSTALL_COMMAND ""
 )
-add_dependencies(update pbrt)
+add_dependencies(update pbrt-update)
 
 
 ExternalProject_Add(utf8proc
@@ -104,7 +104,7 @@ ExternalProject_Add(utf8proc
   CONFIGURE_COMMAND ""
   INSTALL_COMMAND ""
 )
-add_dependencies(update utf8proc)
+add_dependencies(update utf8proc-update)
 
 
 

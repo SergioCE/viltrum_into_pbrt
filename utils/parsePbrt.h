@@ -96,10 +96,22 @@ Reformatting options:
     exit(msg.empty() ? 0 : 1);
 }
 
+std::vector<std::string> GetCommandLineArguments_(int argc, char *argv[]) {
+    std::vector<std::string> argStrings;
+    int i=0;
+    std::cout<<"parser"<<std::endl;
+    while (i<argc) {
+        std::cout<<argv[i]<<std::endl;
+        argStrings.push_back(argv[i]);
+        ++i;
+    }
+    return argStrings;
+}
+
 // main program
 std::vector<std::string> getScene(int argc, char *argv[]) {
     // Convert command-line arguments to vector of strings
-    std::vector<std::string> args = GetCommandLineArguments(argv);
+    std::vector<std::string> args = GetCommandLineArguments_(argc, argv);
 
     // Declare variables for parsed command line
     PBRTOptions options;

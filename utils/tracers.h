@@ -28,8 +28,8 @@ class renderPbrt {                   //Wrapper para la función sphere
         pbrt::Primitive shapes, pbrt::Point2i photoSize, pbrt::ScratchBuffer &scratchBuffer, 
         pbrt::Integrator integrator) : integrator(integrator) scratchBuffer(scratchBuffer), shapes_(shapes), photoSize(photoSize), camera_(camera) , samplerP(sampler){}
 */
-    renderPbrt(pbrt::RayIntegrator* integrator, pbrt::Camera camera, pbrt::Sampler sampler, int spp, pbrt::Point2i photoSize, pbrt::ScratchBuffer &scratchBuffer
-            ,bool _2DOnly_ = false, int repeatedDim_ = -1):_2DOnly(_2DOnly_), repeatedDim(repeatedDim_), spp_(spp), integrator_(integrator), camera_(camera), samplerP(sampler), scratchBuffer(scratchBuffer), photoSize(photoSize){
+    renderPbrt(pbrt::RayIntegrator* integrator, pbrt::Camera& camera, pbrt::Sampler& sampler, int spp, pbrt::Point2i& photoSize, pbrt::ScratchBuffer &scratchBuffer
+            ,bool _2DOnly_ = false, int repeatedDim_ = -1): alloc(), _2DOnly(_2DOnly_), repeatedDim(repeatedDim_), spp_(spp), integrator_(integrator), camera_(camera), samplerP(sampler), scratchBuffer(scratchBuffer), photoSize(photoSize){
                 
     }
 
@@ -40,8 +40,8 @@ class renderPbrt {                   //Wrapper para la función sphere
     pbrt::Allocator alloc;
     pbrt::RayIntegrator* integrator_;
     pbrt::ScratchBuffer &scratchBuffer;
-    pbrt::Point2i photoSize;
-    pbrt::Camera camera_;
+    pbrt::Point2i &photoSize;
+    pbrt::Camera &camera_;
     pbrt::Sampler &samplerP;
 };
 
