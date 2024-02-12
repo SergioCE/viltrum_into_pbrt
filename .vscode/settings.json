@@ -95,7 +95,9 @@
         "numbers": "cpp",
         "semaphore": "cpp",
         "stop_token": "cpp",
-        "cfenv": "cpp"
+        "cfenv": "cpp",
+        "filesystem": "cpp",
+        "__memory": "cpp"
     },
     "C_Cpp.errorSquiggles": "Disabled"
 }

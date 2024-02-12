@@ -20,7 +20,7 @@ int main(int argc, char *argv[]){
     std::cout << "Flags:\n\t-f: pbrt scene filepath\n\t-i: Adaptive iterations" << std::endl;
 
     int scene;
-    int iter;
+    int spp;
     // Process the command line arguments
     for (int i = 1; i < argc; i += 2) {
         // Check if the current argument is a flag
@@ -32,10 +32,10 @@ int main(int argc, char *argv[]){
                 std::cout << "Flag: " << flag << ", (filename) value: " << value << std::endl;
                 scene = i+1;
             }
-            else if (argv[i][1] == 'i') {
+            else if (argv[i][1] == 's') {
                 std::string value = argv[i + 1];
-                std::cout << "Flag: " << flag << ", (iterations) value: " << value << std::endl;
-                iter = atoi(argv[i + 1]);
+                std::cout << "Flag: " << flag << ", (samples) value: " << value << std::endl;
+                spp = atoi(argv[i + 1]);
             }
             else {
                 std::cerr << "Missing value for flag " << flag << std::endl;
@@ -59,14 +59,19 @@ int main(int argc, char *argv[]){
 
     //Integration technique
     viltrum::LoggerProgress logger("Adaptive quadrature rules parallel");
-    std::cout<<"Adaptive quadrature rules parallel: "<<iter<<" iterations."<<std::endl;
+    std::cout<<"Adaptive quadrature rules parallel: "<<spp<<" samples per pixel."<<std::endl;
     string int_tech = "Adaptive";
-    integrate(viltrum::integrator_adaptive_iterations_parallel(viltrum::nested(viltrum::simpson,viltrum::trapezoidal),iter),sol,
-        renderPbrt_parallel(integrator, pbrt.camera, pbrt.sampler, pbrt.spp, pbrt.resolution, pbrt.s_buffers, true, 2),viltrum::range_primary<4>(),logger);
+
+    const int dim = 4;
+    unsigned long spp_cv = std::max(1UL,(unsigned long)(spp*(1.0/16.0)));
+    int bins = pbrt.resolution.x*pbrt.resolution.y;
+    unsigned long iteration = spp_cv*bins/(2*std::pow(3, dim-1));
+    integrate(viltrum::integrator_adaptive_iterations_parallel(viltrum::nested(viltrum::simpson,viltrum::trapezoidal),iteration),sol,
+        renderPbrt_parallel(integrator, pbrt.camera, pbrt.sampler, pbrt.spp, pbrt.resolution, pbrt.s_buffers, true, 2),viltrum::range_primary<dim>(),logger);
 
 
     string name = get_image_name(pbrt);
-    std::string filename = name + int_tech + to_string(iter) + ".hdr";
+    std::string filename = name + int_tech + "_s" + to_string(spp) + ".hdr";
     
     save_image_hdr(filename, sol);
 

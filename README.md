@@ -26,12 +26,11 @@ Execution instructions:
     ./render_adaptive <flags>
         Flags:
             -f: Path to PBRT scene (.pbrt file)
-            -i: Adaptive iterations
+            -s: Samples per pixel
 
     ./render_control_variates <flags>
         Flags:
             -f: Path to PBRT scene (.pbrt file)
-            -i: Adaptive iterations
             -s: Samples per pixel
 
 Scenes:

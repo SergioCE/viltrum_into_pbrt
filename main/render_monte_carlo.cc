@@ -73,7 +73,7 @@ int main(int argc, char *argv[]){
 
 
     string name = get_image_name(pbrt);
-    std::string filename = name + int_tech + to_string(pbrt.spp) + ".hdr";
+    std::string filename = name + int_tech + to_string(spp) + ".hdr";
     
     save_image_hdr(filename, sol);
 

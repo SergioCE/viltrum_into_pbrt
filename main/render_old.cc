@@ -25,9 +25,46 @@ int main(int argc, char *argv[]){
         return 0;
     }
 
-    int option = atoi(argv[1]);
+    std::cout << "Flags:\n\t-f: pbrt scene filepath\n\t-i: Adaptive iterations" << std::endl;
+
+    int scene;
+    int spp;
+    int option;
+    // Process the command line arguments
+    for (int i = 1; i < argc; i += 2) {
+        // Check if the current argument is a flag
+        if (argv[i][0] == '-') {
+            // Process the flag and its corresponding value
+            std::string flag = argv[i];
+            if (argv[i][1] == 'f') {
+                std::string value = argv[i + 1];
+                std::cout << "Flag: " << flag << ", (filename) value: " << value << std::endl;
+                scene = i+1;
+            }
+            else if (argv[i][1] == 's') {
+                std::string value = argv[i + 1];
+                std::cout << "Flag: " << flag << ", (samples) value: " << value << std::endl;
+                spp = atoi(argv[i + 1]);
+            }
+            else if (argv[i][1] == 'o'){
+                std::string value = argv[i + 1];
+                std::cout << "Flag: " << flag << ", (option) value: " << value << std::endl;
+                option = atoi(argv[i + 1]);
+            }
+            else {
+                std::cerr << "Missing value for flag " << flag << std::endl;
+                return 1;  // Return an error code
+            }
+        } else {
+            // Error: Expected a flag but found an argument without a flag
+            std::cerr << "Error: Expected a flag but found argument without a flag." << std::endl;
+            return 1;  // Return an error code
+        }
+    }
+
     
-    std::vector<std::string> filenames = getScene(argc-1,&argv[1]);
+    std::vector<std::string> filenames = getScene(1,&argv[scene]);
+    std::cout<<"Parsed"<<std::endl;
     
     BasicScene scenePbrt;
     BasicSceneBuilder builder(&scenePbrt);
@@ -62,7 +99,6 @@ int main(int argc, char *argv[]){
 
     pbrt::Point2i resolution = camera.GetFilm().FullResolution();
     cout<<resolution[0]<<","<<resolution[1]<<endl;
-    int spp = sampler.SamplesPerPixel();
 
     viltrum::CImgWrapper<float> image(resolution.x,resolution.y);
 

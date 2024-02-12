@@ -52,4 +52,4 @@ add_executable(render_control_variates main/render_control_variates.cc )
 target_compile_options(render_control_variates PRIVATE -w)
 target_link_libraries(render_control_variates PRIVATE ${link_libs})
 
-
+add_executable(inverse main/inverse.cc )
