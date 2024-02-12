@@ -1,10 +1,10 @@
 #pragma once
 const int N=4;
 
-class ViltrumSamplerPbrt {                      //NOTA: Fijarse en este
+class ViltrumSamplerPbrt_father {                      //NOTA: Fijarse en este
   public:
     // IndependentSampler Public Methods
-    ViltrumSamplerPbrt(const std::array<float,N>& x, pbrt::Sampler sampler, int spp, bool _2DOnly_ = false, int repeatedDim_ = -1) : _2DOnly(_2DOnly_), repeatedDim(repeatedDim_), spp_(spp), sampler(sampler), j(0), i(0), v(x){}
+    ViltrumSamplerPbrt_father() {}
 
     static constexpr const char *Name() { return "ViltrumSamplerPbrt"; }
 
@@ -15,71 +15,94 @@ class ViltrumSamplerPbrt {                      //NOTA: Fijarse en este
         return nullptr;
     }
 
-    int SamplesPerPixel() const { return spp_; } //Ojo, returning 0
+    virtual int SamplesPerPixel() const {}
 
-    void StartPixelSample(Point2i p, int sampleIndex, int dim) {
+    void StartPixelSample(Point2i p, int sampleIndex, int dim) {}
+
+    virtual Float Get1D() {}
+
+    virtual Float Get1DSp(){}
+    
+    virtual Point2f Get2D() {}
+    
+    virtual Point2f GetPixel2D() {}
+
+    virtual Sampler Clone(Allocator alloc){}
+
+    virtual std::string ToString() const {}
+
+};
+
+template<typename Iterator>
+class ViltrumSamplerPbrt_template : public ViltrumSamplerPbrt_father{                      //NOTA: Fijarse en este
+  public:
+    // IndependentSampler Public Methods
+    ViltrumSamplerPbrt_template(const auto& seq_, int spp) : spp_(spp){
+      it = new Iterator(seq_.begin());
     }
 
-    Float Get1D() { 
-      //std::cout<<i<<std::endl;
-      if(_2DOnly){
-        return sampler.Get1D();
-      }
-      else{
-        if(i < v.size()){
-          return static_cast<float>(v[i++]);
-        }  
-        else {
-          i++;
-          return sampler.Get1D();
-        }
-      }
+    int SamplesPerPixel() const override { return spp_; }
+
+    Float Get1D() override{ 
+      float x = *(*it); ++(*it);
+      return x;
     }
 
-    Sampler* GetSampler(){
-      return &sampler;
-    }
-
-    Float Get1DSp(){
-      return sampler.Get1D();
+    Float Get1DSp() override{
+      return Get1D();
     }
     
-    Point2f Get2D() { 
-      if(_2DOnly){
-        if(i+1 < v.size()){
-            if(j == repeatedDim){
-              j=j+2;
-              return {static_cast<float>(v[i]),static_cast<float>(v[i+1])};
-            }
-            else{
-              j=j+2;
-              return {static_cast<float>(v[i++]),static_cast<float>(v[i++])};
-            }
-        }  
-        else {
-          return {sampler.Get1D(),sampler.Get1D()};
-        }
-      }
-      else{
-        return {Get1D(), Get1D()}; 
-      }
+    Point2f Get2D() override{ 
+      return {Get1D(), Get1D()}; 
     }
     
-    Point2f GetPixel2D() { return {Get1D(), Get1D()};  }
+    Point2f GetPixel2D() override{ return {Get1D(), Get1D()};  }
 
-    Sampler Clone(Allocator alloc){
-      return alloc.new_object<ViltrumSamplerPbrt>(*this);
-    }
-    std::string ToString() const {
+    std::string ToString() const override{
       return "ViltrumSamplerPbrt";
     }
 
   private:
-    bool _2DOnly;
-    int repeatedDim;
     int spp_;
-    pbrt::Sampler sampler;                    //Sampler por referencia (todo aleatorios) o por copia (mismos siempre)
-    std::size_t i;
-    std::size_t j;
-    std::array<float,N> v;
+    Iterator* it;
+};
+
+
+class ViltrumSamplerPbrt {                      //NOTA: Fijarse en este
+  public:
+    // IndependentSampler Public Methods
+    ViltrumSamplerPbrt(ViltrumSamplerPbrt_father* sampler_, pbrt::Sampler samplerPbrt_): sampler(sampler_), samplerPbrt(samplerPbrt_){}
+
+    static constexpr const char *Name() { return "ViltrumSamplerPbrt"; }
+
+
+    static ViltrumSamplerPbrt *Create(const ParameterDictionary &parameters,
+                                 Point2i fullResolution, const FileLoc *loc,
+                                 Allocator alloc){
+        return nullptr;
+    }
+
+    int SamplesPerPixel() const { return sampler->SamplesPerPixel(); } //Ojo, returning 0
+
+    void StartPixelSample(Point2i p, int sampleIndex, int dim) { return sampler->StartPixelSample(p, sampleIndex, dim);}
+
+    Float Get1D() { return sampler->Get1D();}
+
+    Sampler* GetSampler(){ return &samplerPbrt;}
+
+    Float Get1DSp(){ return sampler->Get1DSp();}
+    
+    Point2f Get2D() { return sampler->Get2D();}
+    
+    Point2f GetPixel2D() { return sampler->GetPixel2D();}
+
+    Sampler Clone(Allocator alloc){ return alloc.new_object<ViltrumSamplerPbrt>(*this);}
+
+    std::string ToString() const { return sampler->ToString();}
+  
+  private: 
+    ViltrumSamplerPbrt_father placeholder;
+    ViltrumSamplerPbrt_father* sampler;
+    pbrt::Sampler samplerPbrt;
+
 };

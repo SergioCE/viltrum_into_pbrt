@@ -1,4 +1,3 @@
-#include "../utils/tracers.h"
 #include "../utils/tracers_parallel.h"
 #include "../utils/preparePBRT.h"
 #include "../utils/save_image.h"
@@ -21,6 +20,7 @@ int main(int argc, char *argv[]){
 
     int scene;
     int spp;
+    std::string output;
     // Process the command line arguments
     for (int i = 1; i < argc; i += 2) {
         // Check if the current argument is a flag
@@ -36,6 +36,11 @@ int main(int argc, char *argv[]){
                 std::string value = argv[i + 1];
                 std::cout << "Flag: " << flag << ", (spp) value: " << value << std::endl;
                 spp = atoi(argv[i + 1]);
+            }
+            else if (argv[i][1] == 'o') {
+                std::string value = argv[i + 1];
+                std::cout << "Flag: " << flag << ", (output) value: " << value << std::endl;
+                output = argv[i + 1];
             }
             else {
                 std::cerr << "Missing value for flag " << flag << std::endl;
@@ -66,12 +71,12 @@ int main(int argc, char *argv[]){
     unsigned long spp_cv = std::max(1UL,(unsigned long)(spp*(1.0/16.0)));
     int bins = pbrt.resolution.x*pbrt.resolution.y;
     unsigned long iteration = spp_cv*bins/(2*std::pow(3, dim-1));
-    integrate(viltrum::integrator_adaptive_control_variates_parallel(viltrum::nested(viltrum::simpson,viltrum::trapezoidal),iteration,std::max(1UL,spp-spp_cv)),sol,
-        renderPbrt_parallel(integrator, pbrt.camera, pbrt.sampler, pbrt.spp, pbrt.resolution, pbrt.s_buffers, true, 2),viltrum::range_primary<dim>(),logger);
+    integrate(viltrum::integrator_fubini<4>(viltrum::integrator_adaptive_control_variates_parallel(viltrum::nested(viltrum::simpson,viltrum::trapezoidal),iteration,std::max(1UL,spp-spp_cv)),viltrum::monte_carlo(1)),
+        sol,renderPbrt_parallel(integrator, pbrt.camera, pbrt.sampler, pbrt.spp, pbrt.resolution, pbrt.s_buffers),viltrum::range_infinite(0.0,0.0,1.0,1.0),logger);
 
 
     string name = get_image_name(pbrt);
-    std::string filename = name + int_tech + "_s" + to_string(spp) + ".hdr";
+    std::string filename = output;
     
     save_image_hdr(filename, sol);
 

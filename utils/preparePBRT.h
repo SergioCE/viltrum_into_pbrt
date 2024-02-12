@@ -1,5 +1,4 @@
 #pragma once
-#include "tracers.h"
 #include "parsePbrt.h"
 #include <pbrt/shapes.h>
 #include <pbrt/materials.h>

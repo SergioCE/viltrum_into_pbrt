@@ -10,7 +10,6 @@
 #include <pbrt/util/sampling.h>
 #include <pbrt/cpu/integrators.h>
 #include <pbrt/materials.h>
-#include "../utils/tracers.h"
 #include "../utils/parsePbrt.h"
 #include <unordered_map>
 #include <thread>
@@ -28,8 +27,9 @@ SpectrumVilt F_parall(const pbrt::Camera& camera, pbrt::ViltrumSamplerPbrt &samp
 
 class renderPbrt_parallel {                   //Wrapper para la función sphere
     public:
-    SpectrumVilt operator()(const std::array<float,N>& x) const {
-        pbrt::ViltrumSamplerPbrt samplerViltrum(x, samplerP, spp_, _2DOnly);
+    SpectrumVilt operator()(const auto& seq) const {
+        ViltrumSamplerPbrt_father* samplerViltrum_ = new ViltrumSamplerPbrt_template<decltype(seq.begin())>(seq, spp_);
+        pbrt::ViltrumSamplerPbrt samplerViltrum(samplerViltrum_, samplerP);
         int id;
         unsigned long int thisThreadId = std::hash<std::thread::id>{}(std::this_thread::get_id());
         
@@ -58,14 +58,12 @@ class renderPbrt_parallel {                   //Wrapper para la función sphere
     };
     
     renderPbrt_parallel(pbrt::RayIntegrator* integrator, pbrt::Camera camera, pbrt::Sampler sampler, int spp, pbrt::Point2i photoSize
-            ,std::vector<pbrt::ScratchBuffer>& s_buffers_,bool _2DOnly_ = false, int repeatedDim_ = -1): s_buffers(s_buffers_), _2DOnly(_2DOnly_), repeatedDim(repeatedDim_), spp_(spp), integrator_(integrator), camera_(camera), samplerP(sampler), photoSize(photoSize){
+            ,std::vector<pbrt::ScratchBuffer>& s_buffers_): s_buffers(s_buffers_), spp_(spp), integrator_(integrator), camera_(camera), samplerP(sampler), photoSize(photoSize){
         
     }
 
     private:
     int spp_;
-    bool _2DOnly;
-    int repeatedDim;
     pbrt::Allocator alloc;
     pbrt::RayIntegrator* integrator_;
     pbrt::ScratchBuffer *scratchBuffer;

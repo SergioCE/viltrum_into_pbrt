@@ -1,5 +1,4 @@
 
-#include "../utils/tracers.h"
 #include "../utils/tracers_parallel.h"
 #include "../utils/parsePbrt.h"
 #include "../utils/preparePBRT.h"
@@ -23,6 +22,7 @@ int main(int argc, char *argv[]){
 
     int scene;
     int spp;
+    std::string output;
     // Process the command line arguments
     for (int i = 1; i < argc; i += 2) {
         // Check if the current argument is a flag
@@ -38,6 +38,11 @@ int main(int argc, char *argv[]){
                 std::string value = argv[i + 1];
                 std::cout << "Flag: " << flag << ", (spp) value: " << value << std::endl;
                 spp = atoi(argv[i + 1]);
+            }
+            else if (argv[i][1] == 'o') {
+                std::string value = argv[i + 1];
+                std::cout << "Flag: " << flag << ", (output) value: " << value << std::endl;
+                output = argv[i + 1];
             }
             else {
                 std::cerr << "Missing value for flag " << flag << std::endl;
@@ -68,12 +73,12 @@ int main(int argc, char *argv[]){
 
     //Integration technique
     integrate(viltrum::integrator_per_bin_parallel(viltrum::monte_carlo(spp)),sol,
-        renderPbrt_parallel(integrator, pbrt.camera, pbrt.sampler, spp, pbrt.resolution, pbrt.s_buffers, true),viltrum::range_primary<4>(),logger);
+        renderPbrt_parallel(integrator, pbrt.camera, pbrt.sampler, spp, pbrt.resolution, pbrt.s_buffers),viltrum::range_infinite(0.0,0.0,1.0,1.0),logger);
     std::cout<<"finished"<<std::endl;
 
 
     string name = get_image_name(pbrt);
-    std::string filename = name + int_tech + to_string(spp) + ".hdr";
+    std::string filename = output;
     
     save_image_hdr(filename, sol);
 

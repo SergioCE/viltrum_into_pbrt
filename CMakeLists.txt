@@ -28,13 +28,13 @@ ${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/src/ext/double-conv
  ${OpenEXR_LIBRARIES} ${ZLIB_LIBRARIES} OpenEXR::IlmImf TBB::tbb)
 
 
-add_executable(render_old main/render_old.cc )
-target_compile_options(render_old PRIVATE -w)
-target_link_libraries(render_old PRIVATE ${link_libs})
+#add_executable(render_old main/render_old.cc )
+#target_compile_options(render_old PRIVATE -w)
+#target_link_libraries(render_old PRIVATE ${link_libs})
 
-add_executable(render_new main/render_new.cc )
-target_compile_options(render_new PRIVATE -w)
-target_link_libraries(render_new PRIVATE ${link_libs})
+#add_executable(render_new main/render_new.cc )
+#target_compile_options(render_new PRIVATE -w)
+#target_link_libraries(render_new PRIVATE ${link_libs})
 
 add_executable(render_monte_carlo main/render_monte_carlo.cc )
 target_compile_options(render_monte_carlo PRIVATE -w)

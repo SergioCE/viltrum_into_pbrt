@@ -1,4 +1,3 @@
-#include "../utils/tracers.h"
 #include "../utils/tracers_parallel.h"
 #include "../utils/preparePBRT.h"
 #include "../utils/save_image.h"

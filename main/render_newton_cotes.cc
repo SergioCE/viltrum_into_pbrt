@@ -1,4 +1,3 @@
-#include "../utils/tracers.h"
 #include "../utils/tracers_parallel.h"
 #include "../utils/preparePBRT.h"
 #include "../utils/save_image.h"
@@ -55,8 +54,8 @@ int main(int argc, char *argv[]){
     //Integration technique
     viltrum::LoggerProgress logger("Newton cotes parallel");
     string int_tech = "Newton";
-    integrate(viltrum::integrator_newton_cotes_parallel(viltrum::steps<16*2>(viltrum::trapezoidal)),sol,
-        renderPbrt_parallel(integrator, pbrt.camera, pbrt.sampler, pbrt.spp, pbrt.resolution, pbrt.s_buffers, true, 2),viltrum::range_primary<4>(),logger);
+    integrate(viltrum::integrator_fubini<4>(viltrum::integrator_newton_cotes_parallel(viltrum::steps<16*2>(viltrum::trapezoidal)),viltrum::monte_carlo(1)),
+        sol,renderPbrt_parallel(integrator, pbrt.camera, pbrt.sampler, pbrt.spp, pbrt.resolution, pbrt.s_buffers),viltrum::range_infinite(0.0,0.0,1.0,1.0),logger);
 
 
     string name = get_image_name(pbrt);

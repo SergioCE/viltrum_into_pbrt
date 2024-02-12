@@ -10,7 +10,6 @@
 #include <pbrt/util/sampling.h>
 #include <pbrt/cpu/integrators.h>
 #include <pbrt/materials.h>
-#include "../utils/tracers.h"
 #include "../utils/parsePbrt.h"
 
 

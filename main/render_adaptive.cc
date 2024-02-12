@@ -1,4 +1,3 @@
-#include "../utils/tracers.h"
 #include "../utils/tracers_parallel.h"
 #include "../utils/preparePBRT.h"
 #include "../utils/save_image.h"
@@ -66,8 +65,8 @@ int main(int argc, char *argv[]){
     unsigned long spp_cv = std::max(1UL,(unsigned long)(spp*(1.0/16.0)));
     int bins = pbrt.resolution.x*pbrt.resolution.y;
     unsigned long iteration = spp_cv*bins/(2*std::pow(3, dim-1));
-    integrate(viltrum::integrator_adaptive_iterations_parallel(viltrum::nested(viltrum::simpson,viltrum::trapezoidal),iteration),sol,
-        renderPbrt_parallel(integrator, pbrt.camera, pbrt.sampler, pbrt.spp, pbrt.resolution, pbrt.s_buffers, true, 2),viltrum::range_primary<dim>(),logger);
+    integrate(viltrum::integrator_fubini<4>(viltrum::integrator_adaptive_iterations_parallel(viltrum::nested(viltrum::simpson,viltrum::trapezoidal),iteration),viltrum::monte_carlo(1)),
+        sol,renderPbrt_parallel(integrator, pbrt.camera, pbrt.sampler, pbrt.spp, pbrt.resolution, pbrt.s_buffers),viltrum::range_infinite(0.0,0.0,1.0,1.0),logger);
 
 
     string name = get_image_name(pbrt);
