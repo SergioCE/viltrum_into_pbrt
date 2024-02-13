@@ -23,13 +23,20 @@ bool all_inserted = false;
 
 thread_local int myId = -1;
 
-SpectrumVilt F_parall(const pbrt::Camera& camera, pbrt::ViltrumSamplerPbrt &samplerViltrum, const pbrt::Point2i& photoSize, pbrt::ScratchBuffer &scratchBuffer, pbrt::RayIntegrator* integrator);
+SpectrumVilt F_parall(const pbrt::Camera& camera, Sampler &sampler, Sampler &samplerPbrt, const pbrt::Point2i& photoSize, pbrt::ScratchBuffer &scratchBuffer, pbrt::RayIntegrator* integrator);
 
 class renderPbrt_parallel {                   //Wrapper para la función sphere
     public:
     SpectrumVilt operator()(const auto& seq) const {
-        ViltrumSamplerPbrt_father* samplerViltrum_ = new ViltrumSamplerPbrt_template<decltype(seq.begin())>(seq, spp_);
-        pbrt::ViltrumSamplerPbrt samplerViltrum(samplerViltrum_, samplerP);
+        ViltrumSamplerPbrt_father* samplerViltrum_ = new ViltrumSamplerPbrt_template<decltype(seq.begin())>(seq, spp_, &samplerP);
+        
+        unique_ptr<ViltrumSamplerPbrt> samplerV(new pbrt::ViltrumSamplerPbrt(samplerViltrum_));
+        Sampler sampler = samplerV.get();
+        //ViltrumSamplerPbrt* a = new pbrt::ViltrumSamplerPbrt(samplerViltrum_);
+        //Sampler sampler = a;
+        //samplers.push_back(new pbrt::ViltrumSamplerPbrt(samplerViltrum_, samplerP));
+        //pbrt::ViltrumSamplerPbrt samplerViltrum(samplerViltrum_, samplerP);
+        
         int id;
         unsigned long int thisThreadId = std::hash<std::thread::id>{}(std::this_thread::get_id());
         
@@ -54,17 +61,16 @@ class renderPbrt_parallel {                   //Wrapper para la función sphere
         id=myId;
         //std::cout<<id<<std::endl;
         s_buffers[id].Reset();
-        return F_parall(camera_, samplerViltrum, photoSize, s_buffers[id], integrator_);
+        return F_parall(camera_, sampler, *samplerV->GetSampler(), photoSize, s_buffers[id], integrator_);
     };
     
     renderPbrt_parallel(pbrt::RayIntegrator* integrator, pbrt::Camera camera, pbrt::Sampler sampler, int spp, pbrt::Point2i photoSize
             ,std::vector<pbrt::ScratchBuffer>& s_buffers_): s_buffers(s_buffers_), spp_(spp), integrator_(integrator), camera_(camera), samplerP(sampler), photoSize(photoSize){
-        
+        //alloc = new pbrt::Allocator();
     }
 
     private:
     int spp_;
-    pbrt::Allocator alloc;
     pbrt::RayIntegrator* integrator_;
     pbrt::ScratchBuffer *scratchBuffer;
     pbrt::Point2i photoSize;
@@ -76,17 +82,16 @@ class renderPbrt_parallel {                   //Wrapper para la función sphere
 };
 
 
-SpectrumVilt F_parall(const pbrt::Camera& camera, pbrt::ViltrumSamplerPbrt &samplerViltrum, const pbrt::Point2i& photoSize, pbrt::ScratchBuffer &scratchBuffer, pbrt::RayIntegrator* integrator){
-    pbrt::Allocator alloc;
-    pbrt::Sampler sampler = samplerViltrum.Clone(alloc);
+SpectrumVilt F_parall(const pbrt::Camera& camera, Sampler &sampler, Sampler &samplerPbrt, const pbrt::Point2i& photoSize, pbrt::ScratchBuffer &scratchBuffer, pbrt::RayIntegrator* integrator){
 
     pbrt::SampledWavelengths lambda = camera.GetFilm().SampleWavelengths(0.5); //samplerViltrum.Get1DSp());
     pbrt::Filter filter = camera.GetFilm().GetFilter();                                 //Mejor get2D
     //cout<<"PIXELES 2 SAMPLES"<<endl;
     Point2f imgSample = sampler.Get2D();
-    pbrt::CameraSample cameraSample = GetCameraSample(*samplerViltrum.GetSampler(), pbrt::Point2i(photoSize[0]*imgSample[0],photoSize[1]*imgSample[1]), filter);       //Nota: Ver cómo la cámara genera el rayo
-    //pbrt::CameraSample cameraSample = GetCameraSample(sampler, pbrt::Point2i(photoSize[0]*imgSample[0],photoSize[1]*imgSample[1]), filter);       //Nota: Ver cómo la cámara genera el rayo
-    // Generate camera ray for current sample
+
+    
+    pbrt::CameraSample cameraSample = GetCameraSample(samplerPbrt, pbrt::Point2i(photoSize[0]*imgSample[0],photoSize[1]*imgSample[1]), filter);       //Nota: Ver cómo la cámara genera el rayo
+
     pstd::optional<pbrt::CameraRayDifferential> cr = camera.GenerateRayDifferential(cameraSample, lambda);
     
     SampledSpectrum L(0.);
@@ -98,6 +103,7 @@ SpectrumVilt F_parall(const pbrt::Camera& camera, pbrt::ViltrumSamplerPbrt &samp
         DCHECK_LT(Length(cameraRay->ray.d), 1.001f);
         Float rayDiffScale =
                 std::max<Float>(.125f, 1 / std::sqrt((Float)sampler.SamplesPerPixel()));
+        
         if (!Options->disablePixelJitter)
             cr->ray.ScaleDifferentials(rayDiffScale);
         
@@ -137,9 +143,10 @@ SpectrumVilt F_parall(const pbrt::Camera& camera, pbrt::ViltrumSamplerPbrt &samp
         // same extend, and can then just average radiance in buckets
         // below.
         L *= cameraSample.filterWeight * CIE_Y_integral;
-    //cout<<L<<endl;
-    //pbrt::RGB color = L.ToRGB(lambda, *pbrt::RGBColorSpace::sRGB);
+
+    pbrt::RGB color = L.ToRGB(lambda, *pbrt::RGBColorSpace::sRGB);
     //cout<<color[0]<<","<< color[1]<<"."<< color[2]<<endl;
-    return SpectrumVilt(rgb[0] * cameraSample.filterWeight, rgb[1] * cameraSample.filterWeight, rgb[2] * cameraSample.filterWeight);
-    //RGB ToRGB(const SampledWavelengths &lambda, const RGBColorSpace &cs) const;
+    cr.reset();
+    return SpectrumVilt(color.r, color.g, color.b);
+    
 }

@@ -1,5 +1,5 @@
 #pragma once
-const int N=4;
+
 
 class ViltrumSamplerPbrt_father {                      //NOTA: Fijarse en este
   public:
@@ -19,6 +19,8 @@ class ViltrumSamplerPbrt_father {                      //NOTA: Fijarse en este
 
     void StartPixelSample(Point2i p, int sampleIndex, int dim) {}
 
+    virtual Sampler* GetSampler(){}
+
     virtual Float Get1D() {}
 
     virtual Float Get1DSp(){}
@@ -31,13 +33,17 @@ class ViltrumSamplerPbrt_father {                      //NOTA: Fijarse en este
 
     virtual std::string ToString() const {}
 
+    virtual ~ViltrumSamplerPbrt_father(){}
+
+    
+
 };
 
 template<typename Iterator>
 class ViltrumSamplerPbrt_template : public ViltrumSamplerPbrt_father{                      //NOTA: Fijarse en este
   public:
     // IndependentSampler Public Methods
-    ViltrumSamplerPbrt_template(const auto& seq_, int spp) : spp_(spp){
+    ViltrumSamplerPbrt_template(const auto& seq_, int spp, Sampler* samplerPbrt_) : spp_(spp), samplerPbrt(samplerPbrt_){
       it = new Iterator(seq_.begin());
     }
 
@@ -51,6 +57,8 @@ class ViltrumSamplerPbrt_template : public ViltrumSamplerPbrt_father{           
     Float Get1DSp() override{
       return Get1D();
     }
+
+    Sampler* GetSampler() override{ return samplerPbrt;}
     
     Point2f Get2D() override{ 
       return {Get1D(), Get1D()}; 
@@ -62,16 +70,22 @@ class ViltrumSamplerPbrt_template : public ViltrumSamplerPbrt_father{           
       return "ViltrumSamplerPbrt";
     }
 
+
+    ~ViltrumSamplerPbrt_template() override{
+      delete(it);
+    }
+
   private:
     int spp_;
     Iterator* it;
+    Sampler* samplerPbrt;
 };
 
 
 class ViltrumSamplerPbrt {                      //NOTA: Fijarse en este
   public:
     // IndependentSampler Public Methods
-    ViltrumSamplerPbrt(ViltrumSamplerPbrt_father* sampler_, pbrt::Sampler samplerPbrt_): sampler(sampler_), samplerPbrt(samplerPbrt_){}
+    ViltrumSamplerPbrt(ViltrumSamplerPbrt_father* sampler_): sampler(sampler_){}
 
     static constexpr const char *Name() { return "ViltrumSamplerPbrt"; }
 
@@ -88,7 +102,7 @@ class ViltrumSamplerPbrt {                      //NOTA: Fijarse en este
 
     Float Get1D() { return sampler->Get1D();}
 
-    Sampler* GetSampler(){ return &samplerPbrt;}
+    Sampler* GetSampler(){ return sampler->GetSampler();}
 
     Float Get1DSp(){ return sampler->Get1DSp();}
     
@@ -98,11 +112,14 @@ class ViltrumSamplerPbrt {                      //NOTA: Fijarse en este
 
     Sampler Clone(Allocator alloc){ return alloc.new_object<ViltrumSamplerPbrt>(*this);}
 
-    std::string ToString() const { return sampler->ToString();}
+    std::string ToString() const {return sampler->ToString();}
+
+    ~ViltrumSamplerPbrt(){
+      delete(sampler);
+    }
   
   private: 
     ViltrumSamplerPbrt_father placeholder;
     ViltrumSamplerPbrt_father* sampler;
-    pbrt::Sampler samplerPbrt;
 
 };
