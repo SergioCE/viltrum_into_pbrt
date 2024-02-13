@@ -90,7 +90,7 @@ SpectrumVilt F_parall(const pbrt::Camera& camera, Sampler &sampler, Sampler &sam
     Point2f imgSample = sampler.Get2D();
 
     
-    pbrt::CameraSample cameraSample = GetCameraSample(samplerPbrt, pbrt::Point2i(photoSize[0]*imgSample[0],photoSize[1]*imgSample[1]), filter);       //Nota: Ver cómo la cámara genera el rayo
+    pbrt::CameraSample cameraSample = GetCameraSample(sampler, pbrt::Point2i(photoSize[0]*imgSample[0],photoSize[1]*imgSample[1]), filter);       //Nota: Ver cómo la cámara genera el rayo
 
     pstd::optional<pbrt::CameraRayDifferential> cr = camera.GenerateRayDifferential(cameraSample, lambda);
     
