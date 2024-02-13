@@ -50,8 +50,7 @@ class ViltrumSamplerPbrt_template : public ViltrumSamplerPbrt_father{           
     int SamplesPerPixel() const override { return spp_; }
 
     Float Get1D() override{ 
-      float x = *(*it); ++(*it);
-      return x;
+      return samplerPbrt->Get1D();
     }
 
     Float Get1DSp() override{
@@ -61,7 +60,9 @@ class ViltrumSamplerPbrt_template : public ViltrumSamplerPbrt_father{           
     Sampler* GetSampler() override{ return samplerPbrt;}
     
     Point2f Get2D() override{ 
-      return {Get1D(), Get1D()}; 
+      float x = *(*it); ++(*it);
+      float y = *(*it); ++(*it);
+      return {x, y}; 
     }
     
     Point2f GetPixel2D() override{ return {Get1D(), Get1D()};  }
