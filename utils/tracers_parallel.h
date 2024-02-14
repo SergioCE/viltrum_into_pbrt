@@ -82,14 +82,19 @@ class renderPbrt_parallel {                   //Wrapper para la función sphere
 };
 
 
+
+
+
+
+
 SpectrumVilt F_parall(const pbrt::Camera& camera, Sampler &sampler, Sampler &samplerPbrt, const pbrt::Point2i& photoSize, pbrt::ScratchBuffer &scratchBuffer, pbrt::RayIntegrator* integrator){
 
-    pbrt::SampledWavelengths lambda = camera.GetFilm().SampleWavelengths(0.5); //samplerViltrum.Get1DSp());
-    pbrt::Filter filter = camera.GetFilm().GetFilter();                                 //Mejor get2D
-    //cout<<"PIXELES 2 SAMPLES"<<endl;
+    // 0 and 1
     Point2f imgSample = sampler.Get2D();
 
-    
+    pbrt::SampledWavelengths lambda = camera.GetFilm().SampleWavelengths(sampler.Get1D()); //samplerViltrum.Get1DSp());
+    pbrt::Filter filter = camera.GetFilm().GetFilter();                                 //Mejor get2D
+
     pbrt::CameraSample cameraSample = GetCameraSample(sampler, pbrt::Point2i(photoSize[0]*imgSample[0],photoSize[1]*imgSample[1]), filter);       //Nota: Ver cómo la cámara genera el rayo
 
     pstd::optional<pbrt::CameraRayDifferential> cr = camera.GenerateRayDifferential(cameraSample, lambda);
@@ -104,49 +109,36 @@ SpectrumVilt F_parall(const pbrt::Camera& camera, Sampler &sampler, Sampler &sam
         Float rayDiffScale =
                 std::max<Float>(.125f, 1 / std::sqrt((Float)sampler.SamplesPerPixel()));
         
-        if (!Options->disablePixelJitter)
-            cr->ray.ScaleDifferentials(rayDiffScale);
+        cr->ray.ScaleDifferentials(rayDiffScale);
         
         bool initializeVisibleSurface = camera.GetFilm().UsesVisibleSurface();
 
         L = cr->weight * integrator->Li(cr->ray, lambda, sampler, scratchBuffer,initializeVisibleSurface ? &visibleSurface : nullptr);                                //Necesito un integrador para usar su LI, qué hago?
 
         if (L.HasNaNs()) {
+            std::cout<<"Invalid value"<<std::endl;
             L = SampledSpectrum(0.f);
         } else if (IsInf(L.y(lambda))) {
+            std::cout<<"Invalid value"<<std::endl;
             L = SampledSpectrum(0.f);
         }
     }
+    else{
+        std::cout<<"No ray generated"<<std::endl;
+    }
+
 
     RGB rgb = camera.GetFilm().GetPixelSensor()->ToSensorRGB(L, lambda);
-    Float maxComponentValue = Infinity;
-        // Optionally clamp sensor RGB value
-        Float m = std::max({rgb.r, rgb.g, rgb.b});
-        if (m > maxComponentValue)
-            rgb *= maxComponentValue / m;
+    Float m = std::max({rgb.r, rgb.g, rgb.b});
+    float maxComponentValue = 25;
+    if (m > maxComponentValue)
+        rgb *= maxComponentValue / m;
+    
+    rgb = rgb*cameraSample.filterWeight;
 
-        DCHECK(InsideExclusive(pFilm, pixelBounds));
-        // Update RGB fields in Pixel structure.
-
-        // Spectral processing starts here.
-        // Optionally clamp spectral value. (TODO: for spectral should we
-        // just clamp channels individually?)
-        Float lm = L.MaxComponentValue();
-        if (lm > maxComponentValue)
-            L *= maxComponentValue / lm;
-
-        // The CIE_Y_integral factor effectively cancels out the effect of
-        // the conversion of light sources to use photometric units for
-        // specification.  We then do *not* divide by the PDF in |lambda|
-        // but take advantage of the fact that we know that it is uniform
-        // in SampleWavelengths(), the fact that the buckets all have the
-        // same extend, and can then just average radiance in buckets
-        // below.
-        L *= cameraSample.filterWeight * CIE_Y_integral;
-
-    pbrt::RGB color = L.ToRGB(lambda, *pbrt::RGBColorSpace::sRGB);
-    //cout<<color[0]<<","<< color[1]<<"."<< color[2]<<endl;
+    pbrt::SquareMatrix<3> outputRGBFromSensorRGB = pbrt::RGBColorSpace::sRGB->RGBFromXYZ * camera.GetFilm().GetPixelSensor()->XYZFromSensorRGB;
+    rgb = outputRGBFromSensorRGB * rgb;
     cr.reset();
-    return SpectrumVilt(color.r, color.g, color.b);
+    return SpectrumVilt(rgb[0], rgb[1], rgb[2]);
     
 }
