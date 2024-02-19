@@ -67,18 +67,20 @@ int main(int argc, char *argv[]){
     std::cout<<"Adaptive Control Variates parallel: "<<spp<<" samples per pixel."<<std::endl;
     string int_tech = "CV";
 
-    int numDim = 4;
+    int numDim = 6;
+    //Dimensions are chosen in pairs of two
+    //If get<0> is 2 the third get2D will be the control variate dims
     std::vector<std::tuple<int,int>> chosen_dims;
     chosen_dims.push_back(std::make_tuple(0,0));
-    chosen_dims.push_back(std::make_tuple(1,1));
-    chosen_dims.push_back(std::make_tuple(7,2));
-    chosen_dims.push_back(std::make_tuple(8,3));
+    chosen_dims.push_back(std::make_tuple(2,1));
+    //chosen_dims.push_back(std::make_tuple(3,2));
+    //chosen_dims.push_back(std::make_tuple(8,3));
     //chosen_dims.push_back(std::make_tuple(10,2));
     //chosen_dims.push_back(std::make_tuple(11,3));
 
     int mc_spp = 2;
     spp = spp / mc_spp;
-    const int dim = 4;
+    const int dim = 6;
     unsigned long spp_cv = std::max(1UL,(unsigned long)(spp*(1.0/16.0)));
     int bins = pbrt.resolution.x*pbrt.resolution.y;
     unsigned long iteration = spp_cv*bins/(2*std::pow(3, dim-1));
