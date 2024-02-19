@@ -67,12 +67,23 @@ int main(int argc, char *argv[]){
     std::cout<<"Adaptive Control Variates parallel: "<<spp<<" samples per pixel."<<std::endl;
     string int_tech = "CV";
 
+    int numDim = 4;
+    std::vector<std::tuple<int,int>> chosen_dims;
+    chosen_dims.push_back(std::make_tuple(0,0));
+    chosen_dims.push_back(std::make_tuple(1,1));
+    chosen_dims.push_back(std::make_tuple(7,2));
+    chosen_dims.push_back(std::make_tuple(8,3));
+    //chosen_dims.push_back(std::make_tuple(10,2));
+    //chosen_dims.push_back(std::make_tuple(11,3));
+
+    int mc_spp = 2;
+    spp = spp / mc_spp;
     const int dim = 4;
     unsigned long spp_cv = std::max(1UL,(unsigned long)(spp*(1.0/16.0)));
     int bins = pbrt.resolution.x*pbrt.resolution.y;
     unsigned long iteration = spp_cv*bins/(2*std::pow(3, dim-1));
-    integrate(viltrum::integrator_fubini<4>(viltrum::integrator_adaptive_control_variates_parallel(viltrum::nested(viltrum::simpson,viltrum::trapezoidal),iteration,std::max(1UL,spp-spp_cv)),viltrum::monte_carlo(1)),
-        sol,renderPbrt_parallel(integrator, pbrt.camera, pbrt.sampler, pbrt.spp, pbrt.resolution, pbrt.s_buffers),viltrum::range_infinite(0.0,0.0,1.0,1.0),logger);
+    integrate(viltrum::integrator_fubini<dim>(viltrum::integrator_adaptive_control_variates_parallel(viltrum::nested(viltrum::simpson,viltrum::trapezoidal),iteration,std::max(1UL,spp-spp_cv)),viltrum::monte_carlo(mc_spp)),
+        sol,renderPbrt_parallel(integrator, pbrt.camera, pbrt.sampler, pbrt.spp, pbrt.resolution, pbrt.s_buffers, numDim, chosen_dims),viltrum::range_infinite(0.f,0.f,1.f,1.f),logger);
 
 
     string name = get_image_name(pbrt);
