@@ -36,6 +36,10 @@ ${CMAKE_CURRENT_SOURCE_DIR}/build/pbrt-prefix/src/pbrt-build/src/ext/double-conv
 #target_compile_options(render_new PRIVATE -w)
 #target_link_libraries(render_new PRIVATE ${link_libs})
 
+add_executable(pbrtPrueba main/pbrtMain.cc )
+target_compile_options(pbrtPrueba PRIVATE -w)
+target_link_libraries(pbrtPrueba PRIVATE ${link_libs})
+
 add_executable(render_monte_carlo main/render_monte_carlo.cc )
 target_compile_options(render_monte_carlo PRIVATE -w)
 target_link_libraries(render_monte_carlo PRIVATE ${link_libs})
@@ -52,4 +56,5 @@ add_executable(render_control_variates main/render_control_variates.cc )
 target_compile_options(render_control_variates PRIVATE -w)
 target_link_libraries(render_control_variates PRIVATE ${link_libs})
 
-add_executable(inverse main/inverse.cc )
+#add_executable(inverse main/inverse.cc
+#        external/pbrt/src/pbrt/cpu/integrators.cpp)

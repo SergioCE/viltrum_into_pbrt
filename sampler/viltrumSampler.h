@@ -1,6 +1,5 @@
 #pragma once
 
-
 class ViltrumSamplerPbrt_father {                      //NOTA: Fijarse en este
   public:
     // IndependentSampler Public Methods
@@ -52,7 +51,6 @@ class ViltrumSamplerPbrt_template : public ViltrumSamplerPbrt_father{           
     Float Get1D() override{ 
       float x = *(*it); ++(*it);
       return x;
-      //return samplerPbrt->Get1D();
     }
 
     Float Get1DSp() override{
@@ -92,9 +90,9 @@ class ViltrumSamplerPbrt {                      //NOTA: Fijarse en este
     : chosen_dims(chosen_dims_), totalPairs(chosen_dims_.size()), pair_idx(0), curr_pair(0), sampler(sampler_){
       
       for(int i=0; i<cvDims_; i++){
-        cv_samples.push_back(sampler->Get1D());
+          float x = sampler->Get1D();
+        cv_samples.push_back(x);
       }
-      //std::cout<<cv_samples[0]<<std::endl;
     }
 
     static constexpr const char *Name() { return "ViltrumSamplerPbrt"; }
@@ -111,19 +109,6 @@ class ViltrumSamplerPbrt {                      //NOTA: Fijarse en este
     void StartPixelSample(Point2i p, int sampleIndex, int dim) { return sampler->StartPixelSample(p, sampleIndex, dim);}
 
     Float Get1D() { 
-      //std::cout<<curr_dim<<std::endl;
-      //if(dim_idx < totalDims){
-      //  //If we are in a chosen dim
-      //  if(curr_dim == std::get<0>(chosen_dims[dim_idx])){
-      //    //std::cout<<std::get<1>(chosen_dims[dim_idx])<<" for "<<curr_dim<<std::endl;
-      //    dim_idx++;
-      //    curr_dim++;
-      //    return cv_samples[std::get<1>(chosen_dims[dim_idx-1])];
-      //  }
-      //}
-      //
-      ////if(dim_idx == numDim)
-      //curr_dim++;
       return sampler->Get1D();
     }
 
@@ -132,18 +117,25 @@ class ViltrumSamplerPbrt {                      //NOTA: Fijarse en este
     Float Get1DSp(){ return Get1D();}
     
     Point2f Get2D() { 
-      if(pair_idx < totalPairs){
-        if(curr_pair == std::get<0>(chosen_dims[pair_idx])){
-          curr_pair++;
-          pair_idx++;
-          return {cv_samples[2*std::get<1>(chosen_dims[pair_idx-1])], cv_samples[2*std::get<1>(chosen_dims[pair_idx-1]) + 1]};
-        }
-      }
-      curr_pair++;
       return {Get1D(), Get1D()};
     }
     
-    Point2f GetPixel2D() { return Get2D();}
+    Point2f GetPixel2D() { 
+      //std::cout<<"\t\tCurr pair: "<<curr_pair<<std::endl;
+      if(pair_idx < totalPairs){
+        if(curr_pair == std::get<0>(chosen_dims[pair_idx])){
+          
+          pair_idx++;
+          float x1 = cv_samples[2*std::get<1>(chosen_dims[pair_idx-1])];
+          float x2 = cv_samples[2*std::get<1>(chosen_dims[pair_idx-1]) + 1];
+          curr_pair++;
+          //std::cout<<"\t -> "<< x1<<" - "<< x2<<std::endl;
+          return {x1, x2};
+        }
+      }
+      curr_pair++;
+      return Get2D();
+    }
 
     Sampler Clone(Allocator alloc){ return alloc.new_object<ViltrumSamplerPbrt>(*this);}
 

@@ -83,9 +83,11 @@ ExternalProject_Add(pbrt
   SOURCE_DIR ${EXTERNAL_INSTALL_LOCATION}/pbrt
   UPDATE_DISCONNECTED 1
   STEP_TARGETS update
-  #COMMAND "echo hola"
+  #COMMAND 
   BUILD_COMMAND cp ${CMAKE_CURRENT_SOURCE_DIR}/pbrt_changes/sampler.h ${CMAKE_CURRENT_SOURCE_DIR}/external/pbrt/src/pbrt/base/sampler.h
   COMMAND cp ${CMAKE_CURRENT_SOURCE_DIR}/pbrt_changes/samplers.h ${CMAKE_CURRENT_SOURCE_DIR}/external/pbrt/src/pbrt/samplers.h
+  COMMAND cp ${CMAKE_CURRENT_SOURCE_DIR}/pbrt_changes/integrators.cpp ${CMAKE_CURRENT_SOURCE_DIR}/external/pbrt/src/pbrt/cpu/integrators.cpp
+  COMMAND cp ${CMAKE_CURRENT_SOURCE_DIR}/pbrt_changes/integrators.h ${CMAKE_CURRENT_SOURCE_DIR}/external/pbrt/src/pbrt/cpu/integrators.h
   COMMAND ${CMAKE_COMMAND} --build .
   #CONFIGURE_COMMAND ""
   INSTALL_COMMAND ""

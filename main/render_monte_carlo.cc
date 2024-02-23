@@ -71,9 +71,16 @@ int main(int argc, char *argv[]){
     viltrum::LoggerProgress logger("Monte-Carlo parallel");
     int bins = pbrt.resolution.x*pbrt.resolution.y;
 
+
+
+    int numDim = 0;
+    //Dimensions are chosen in pairs of two
+    //If get<0> is 2 the third get2D will be the control variate dims
+    std::vector<std::tuple<int,int>> chosen_dims;
+
     //Integration technique
     integrate(viltrum::integrator_per_bin_parallel(viltrum::monte_carlo(spp)),sol,
-        renderPbrt_parallel(integrator, pbrt.camera, pbrt.sampler, spp, pbrt.resolution, pbrt.s_buffers),viltrum::range_infinite(0.0,0.0,1.0,1.0),logger);
+        renderPbrt_parallel(integrator, pbrt.camera, pbrt.sampler, spp, pbrt.resolution, pbrt.s_buffers, numDim, chosen_dims),viltrum::range_infinite(0.0,0.0,1.0,1.0),logger);
     std::cout<<"finished"<<std::endl;
 
 

@@ -108,7 +108,7 @@ pbrt::CameraSample GetCameraSample_Viltrum(Sampler &sampler, Point2f pPixelfi,
 SpectrumVilt F_parall(const pbrt::Camera& camera, Sampler &sampler, Sampler &samplerPbrt, const pbrt::Point2i& photoSize, pbrt::ScratchBuffer &scratchBuffer, pbrt::RayIntegrator* integrator){
 
     // 0 and 1
-    Point2f imgSample = sampler.Get2D();
+    Point2f imgSample = sampler.GetPixel2D();
     
     pbrt::SampledWavelengths lambda = camera.GetFilm().SampleWavelengths(sampler.Get1D()); //samplerViltrum.Get1DSp());
     pbrt::Filter filter = camera.GetFilm().GetFilter();                                 //Mejor get2D
@@ -136,9 +136,11 @@ SpectrumVilt F_parall(const pbrt::Camera& camera, Sampler &sampler, Sampler &sam
 
         if (L.HasNaNs()) {
             std::cout<<"Invalid value"<<std::endl;
+            std::cout<<photoSize[0]*imgSample[0]<<" - "<<photoSize[1]*imgSample[1]<<std::endl;
             L = SampledSpectrum(0.f);
         } else if (IsInf(L.y(lambda))) {
             std::cout<<"Invalid value"<<std::endl;
+            std::cout<<photoSize[0]*imgSample[0]<<" - "<<photoSize[1]*imgSample[1]<<std::endl;
             L = SampledSpectrum(0.f);
         }
     }
