@@ -80,7 +80,7 @@ int main(int argc, char *argv[]){
 
     //Integration technique
     integrate(viltrum::integrator_per_bin_parallel(viltrum::monte_carlo(spp)),sol,
-        renderPbrt_parallel(integrator, pbrt.camera, pbrt.sampler, spp, pbrt.resolution, pbrt.s_buffers, numDim, chosen_dims),viltrum::range_infinite(0.0,0.0,1.0,1.0),logger);
+        renderPbrt_parallel(integrator, pbrt.camera, spp, pbrt.resolution, pbrt.s_buffers, numDim, chosen_dims),viltrum::range_infinite(0.0,0.0,1.0,1.0),logger);
     std::cout<<"finished"<<std::endl;
 
 

@@ -42,7 +42,7 @@ template<typename Iterator>
 class ViltrumSamplerPbrt_template : public ViltrumSamplerPbrt_father{                      //NOTA: Fijarse en este
   public:
     // IndependentSampler Public Methods
-    ViltrumSamplerPbrt_template(const auto& seq_, int spp, Sampler* samplerPbrt_) : spp_(spp), samplerPbrt(samplerPbrt_){
+    ViltrumSamplerPbrt_template(const auto& seq_, int spp) : spp_(spp){
       it = new Iterator(seq_.begin());
     }
 
@@ -57,7 +57,7 @@ class ViltrumSamplerPbrt_template : public ViltrumSamplerPbrt_father{           
       return Get1D();
     }
 
-    Sampler* GetSampler() override{ return samplerPbrt;}
+    Sampler* GetSampler() override{ return NULL;}
     
     Point2f Get2D() override{ 
       //float x = *(*it); ++(*it);
@@ -79,7 +79,6 @@ class ViltrumSamplerPbrt_template : public ViltrumSamplerPbrt_father{           
   private:
     int spp_;
     Iterator* it;
-    Sampler* samplerPbrt;
 };
 
 
@@ -112,7 +111,7 @@ class ViltrumSamplerPbrt {                      //NOTA: Fijarse en este
       return sampler->Get1D();
     }
 
-    Sampler* GetSampler(){ return sampler->GetSampler();}
+    Sampler* GetSampler(){ return NULL;}
 
     Float Get1DSp(){ return Get1D();}
     

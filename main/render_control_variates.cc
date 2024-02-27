@@ -103,7 +103,7 @@ int main(int argc, char *argv[]){
             integrator_adaptive_fubini_variance_reduction_parallel<dim>(
                     nested(simpson,trapezoidal),error_heuristic_default(error_metric_absolute()),iteration,mc_spp,
                     rr_uniform_region(),cv_optimize_weight(),region_sampling_uniform(),spp_residual),
-        sol,renderPbrt_parallel(integrator, pbrt.camera, pbrt.sampler, pbrt.spp, pbrt.resolution, pbrt.s_buffers, numDim, chosen_dims),range_infinite(0.0f,1.0f),logger);
+        sol,renderPbrt_parallel(integrator, pbrt.camera, pbrt.spp, pbrt.resolution, pbrt.s_buffers, numDim, chosen_dims),range_infinite(0.0f,1.0f),logger);
     }
     else if(var_red == 1){
         LoggerProgress logger("rr_uniform, alpha=0");
@@ -112,7 +112,7 @@ int main(int argc, char *argv[]){
             integrator_adaptive_fubini_variance_reduction_parallel<dim>(
                     nested(simpson,trapezoidal),error_heuristic_default(error_metric_absolute()),iteration,mc_spp,
                     rr_uniform_region(),cv_fixed_weight(0),region_sampling_uniform(),spp_residual),
-        sol,renderPbrt_parallel(integrator, pbrt.camera, pbrt.sampler, pbrt.spp, pbrt.resolution, pbrt.s_buffers, numDim, chosen_dims),range_infinite(0.0f,1.0f),logger);
+        sol,renderPbrt_parallel(integrator, pbrt.camera, pbrt.spp, pbrt.resolution, pbrt.s_buffers, numDim, chosen_dims),range_infinite(0.0f,1.0f),logger);
     }
     else if(var_red == 2){
         LoggerProgress logger("rr_uniform, alpha=1");
@@ -121,7 +121,7 @@ int main(int argc, char *argv[]){
             integrator_adaptive_fubini_variance_reduction_parallel<dim>(
                     nested(simpson,trapezoidal),error_heuristic_default(error_metric_absolute()),iteration,mc_spp,
                     rr_uniform_region(),cv_fixed_weight(1),region_sampling_uniform(),spp_residual),
-        sol,renderPbrt_parallel(integrator, pbrt.camera, pbrt.sampler, pbrt.spp, pbrt.resolution, pbrt.s_buffers, numDim, chosen_dims),range_infinite(0.0f,1.0f),logger);
+        sol,renderPbrt_parallel(integrator, pbrt.camera, pbrt.spp, pbrt.resolution, pbrt.s_buffers, numDim, chosen_dims),range_infinite(0.0f,1.0f),logger);
     }
 
 
@@ -132,7 +132,7 @@ int main(int argc, char *argv[]){
             integrator_adaptive_fubini_variance_reduction_parallel<dim>(
                     nested(simpson,trapezoidal),error_heuristic_default(error_metric_absolute()),iteration,mc_spp,
                     rr_integral_region(),cv_optimize_weight(),region_sampling_uniform(),spp_residual),
-            sol,renderPbrt_parallel(integrator, pbrt.camera, pbrt.sampler, pbrt.spp, pbrt.resolution, pbrt.s_buffers, numDim, chosen_dims),range_infinite(0.f,0.f,1.f,1.f),logger);
+            sol,renderPbrt_parallel(integrator, pbrt.camera, pbrt.spp, pbrt.resolution, pbrt.s_buffers, numDim, chosen_dims),range_infinite(0.f,0.f,1.f,1.f),logger);
     }
     else if(var_red == 4){
         LoggerProgress logger("rr_integral - alpha=0");
@@ -141,7 +141,7 @@ int main(int argc, char *argv[]){
             integrator_adaptive_fubini_variance_reduction_parallel<dim>(
                     nested(simpson,trapezoidal),error_heuristic_default(error_metric_absolute()),iteration,mc_spp,
                     rr_integral_region(),cv_fixed_weight(0),region_sampling_uniform(),spp_residual),
-            sol,renderPbrt_parallel(integrator, pbrt.camera, pbrt.sampler, pbrt.spp, pbrt.resolution, pbrt.s_buffers, numDim, chosen_dims),range_infinite(0.f,0.f,1.f,1.f),logger);
+            sol,renderPbrt_parallel(integrator, pbrt.camera, pbrt.spp, pbrt.resolution, pbrt.s_buffers, numDim, chosen_dims),range_infinite(0.f,0.f,1.f,1.f),logger);
     }
     else if(var_red == 5){
         LoggerProgress logger("rr_integral - alpha=1");
@@ -150,7 +150,7 @@ int main(int argc, char *argv[]){
             integrator_adaptive_fubini_variance_reduction_parallel<dim>(
                     nested(simpson,trapezoidal),error_heuristic_default(error_metric_absolute()),iteration,mc_spp,
                     rr_integral_region(),cv_fixed_weight(1),region_sampling_uniform(),spp_residual),
-            sol,renderPbrt_parallel(integrator, pbrt.camera, pbrt.sampler, pbrt.spp, pbrt.resolution, pbrt.s_buffers, numDim, chosen_dims),range_infinite(0.f,0.f,1.f,1.f),logger);
+            sol,renderPbrt_parallel(integrator, pbrt.camera, pbrt.spp, pbrt.resolution, pbrt.s_buffers, numDim, chosen_dims),range_infinite(0.f,0.f,1.f,1.f),logger);
     }
 
 
@@ -161,7 +161,7 @@ int main(int argc, char *argv[]){
             integrator_adaptive_fubini_variance_reduction_parallel<dim>(
                     nested(simpson,trapezoidal),error_heuristic_default(error_metric_absolute()),iteration,mc_spp,
                     rr_error_region(),cv_optimize_weight(),region_sampling_uniform(),spp_residual),
-            sol,renderPbrt_parallel(integrator, pbrt.camera, pbrt.sampler, pbrt.spp, pbrt.resolution, pbrt.s_buffers, numDim, chosen_dims),range_infinite(0.f,0.f,1.f,1.f),logger);
+            sol,renderPbrt_parallel(integrator, pbrt.camera, pbrt.spp, pbrt.resolution, pbrt.s_buffers, numDim, chosen_dims),range_infinite(0.f,0.f,1.f,1.f),logger);
     }
     else if(var_red == 7){
         LoggerProgress logger("rr_error_region - alpha=0");
@@ -170,7 +170,7 @@ int main(int argc, char *argv[]){
             integrator_adaptive_fubini_variance_reduction_parallel<dim>(
                     nested(simpson,trapezoidal),error_heuristic_default(error_metric_absolute()),iteration,mc_spp,
                     rr_error_region(),cv_fixed_weight(0),region_sampling_uniform(),spp_residual),
-            sol,renderPbrt_parallel(integrator, pbrt.camera, pbrt.sampler, pbrt.spp, pbrt.resolution, pbrt.s_buffers, numDim, chosen_dims),range_infinite(0.f,0.f,1.f,1.f),logger);
+            sol,renderPbrt_parallel(integrator, pbrt.camera, pbrt.spp, pbrt.resolution, pbrt.s_buffers, numDim, chosen_dims),range_infinite(0.f,0.f,1.f,1.f),logger);
     }
     else if(var_red == 8){
         LoggerProgress logger("rr_error_region - alpha=1");
@@ -179,7 +179,7 @@ int main(int argc, char *argv[]){
             integrator_adaptive_fubini_variance_reduction_parallel<dim>(
                     nested(simpson,trapezoidal),error_heuristic_default(error_metric_absolute()),iteration,mc_spp,
                     rr_error_region(),cv_fixed_weight(1),region_sampling_uniform(),spp_residual),
-            sol,renderPbrt_parallel(integrator, pbrt.camera, pbrt.sampler, pbrt.spp, pbrt.resolution, pbrt.s_buffers, numDim, chosen_dims),range_infinite(0.f,0.f,1.f,1.f),logger);
+            sol,renderPbrt_parallel(integrator, pbrt.camera, pbrt.spp, pbrt.resolution, pbrt.s_buffers, numDim, chosen_dims),range_infinite(0.f,0.f,1.f,1.f),logger);
     }
 
 

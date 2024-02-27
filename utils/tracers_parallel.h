@@ -14,7 +14,7 @@
 #include <unordered_map>
 #include <thread>
 #include <mutex>
-
+#include <cmath>
 
 std::mutex mymutex;
 int numIds = 0;
@@ -23,13 +23,13 @@ bool all_inserted = false;
 
 thread_local int myId = -1;
 
-SpectrumVilt F_parall(const pbrt::Camera& camera, Sampler &sampler, Sampler &samplerPbrt, const pbrt::Point2i& photoSize, pbrt::ScratchBuffer &scratchBuffer, pbrt::RayIntegrator* integrator);
+SpectrumVilt F_parall(const pbrt::Camera& camera, Sampler &sampler, const pbrt::Point2i& photoSize, pbrt::ScratchBuffer &scratchBuffer, pbrt::RayIntegrator* integrator);
 
 class renderPbrt_parallel {                   //Wrapper para la función sphere
     public:
     SpectrumVilt operator()(const auto& seq) const {
         
-        ViltrumSamplerPbrt_father* samplerViltrum_ = new ViltrumSamplerPbrt_template<decltype(seq.begin())>(seq, spp_, &samplerP);
+        ViltrumSamplerPbrt_father* samplerViltrum_ = new ViltrumSamplerPbrt_template<decltype(seq.begin())>(seq, spp_);
         unique_ptr<ViltrumSamplerPbrt> samplerV(new pbrt::ViltrumSamplerPbrt(samplerViltrum_, numDim, chosen_dims));
         
         Sampler sampler = samplerV.get();
@@ -64,12 +64,12 @@ class renderPbrt_parallel {                   //Wrapper para la función sphere
         //std::cout<<id<<std::endl;
         s_buffers[id].Reset();
         
-        return F_parall(camera_, sampler, *samplerV->GetSampler(), photoSize, s_buffers[id], integrator_);
+        return F_parall(camera_, sampler, photoSize, s_buffers[id], integrator_);
     };
     
-    renderPbrt_parallel(pbrt::RayIntegrator* integrator, pbrt::Camera camera, pbrt::Sampler sampler, int spp, pbrt::Point2i photoSize
+    renderPbrt_parallel(pbrt::RayIntegrator* integrator, pbrt::Camera camera, int spp, pbrt::Point2i photoSize
             ,std::vector<pbrt::ScratchBuffer>& s_buffers_, int numDim_ = 0, const std::vector<std::tuple<int,int>>& chosen_dims_ = {}): 
-            numDim(numDim_), chosen_dims(chosen_dims_), s_buffers(s_buffers_), spp_(spp), integrator_(integrator), camera_(camera), samplerP(sampler), photoSize(photoSize){
+            numDim(numDim_), chosen_dims(chosen_dims_), s_buffers(s_buffers_), spp_(spp), integrator_(integrator), camera_(camera), photoSize(photoSize){
         //alloc = new pbrt::Allocator();
         
     }
@@ -80,7 +80,6 @@ class renderPbrt_parallel {                   //Wrapper para la función sphere
     pbrt::ScratchBuffer *scratchBuffer;
     pbrt::Point2i photoSize;
     pbrt::Camera camera_;
-    pbrt::Sampler &samplerP;
 
     std::vector<std::tuple<int,int>> chosen_dims;
     int numDim;
@@ -105,7 +104,7 @@ pbrt::CameraSample GetCameraSample_Viltrum(Sampler &sampler, Point2f pPixelfi,
 
 
 
-SpectrumVilt F_parall(const pbrt::Camera& camera, Sampler &sampler, Sampler &samplerPbrt, const pbrt::Point2i& photoSize, pbrt::ScratchBuffer &scratchBuffer, pbrt::RayIntegrator* integrator){
+SpectrumVilt F_parall(const pbrt::Camera& camera, Sampler &sampler, const pbrt::Point2i& photoSize, pbrt::ScratchBuffer &scratchBuffer, pbrt::RayIntegrator* integrator){
 
     // 0 and 1
     Point2f imgSample = sampler.GetPixel2D();
@@ -138,11 +137,7 @@ SpectrumVilt F_parall(const pbrt::Camera& camera, Sampler &sampler, Sampler &sam
             std::cout<<"Invalid value"<<std::endl;
             std::cout<<photoSize[0]*imgSample[0]<<" - "<<photoSize[1]*imgSample[1]<<std::endl;
             L = SampledSpectrum(0.f);
-        } else if (IsInf(L.y(lambda))) {
-            std::cout<<"Invalid value"<<std::endl;
-            std::cout<<photoSize[0]*imgSample[0]<<" - "<<photoSize[1]*imgSample[1]<<std::endl;
-            L = SampledSpectrum(0.f);
-        }
+        } 
     }
     else{
         std::cout<<"No ray generated"<<std::endl;
@@ -154,11 +149,13 @@ SpectrumVilt F_parall(const pbrt::Camera& camera, Sampler &sampler, Sampler &sam
     float maxComponentValue = 25;
     if (m > maxComponentValue)
         rgb *= maxComponentValue / m;
-    
-    //rgb = rgb*cameraSample.filterWeight;
 
     pbrt::SquareMatrix<3> outputRGBFromSensorRGB = pbrt::RGBColorSpace::sRGB->RGBFromXYZ * camera.GetFilm().GetPixelSensor()->XYZFromSensorRGB;
     rgb = outputRGBFromSensorRGB * rgb;
+    
+    //rgb = rgb*cameraSample.filterWeight;
+
+
     cr.reset();
     return SpectrumVilt(rgb[0], rgb[1], rgb[2]);
     

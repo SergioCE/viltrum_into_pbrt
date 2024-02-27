@@ -44,7 +44,7 @@ int main(int argc, char *argv[]){
         viltrum::LoggerProgress logger("Monte-Carlo parallel");
 
         integrate(viltrum::integrator_per_bin_parallel(viltrum::monte_carlo(pbrt.spp)),sol,
-            renderPbrt_parallel(integrator, pbrt.camera, pbrt.sampler, pbrt.spp, pbrt.resolution, pbrt.s_buffers, true),viltrum::range_primary<4>(),logger);
+            renderPbrt_parallel(integrator, pbrt.camera, pbrt.spp, pbrt.resolution, pbrt.s_buffers, true),viltrum::range_primary<4>(),logger);
         std::cout<<"finished"<<std::endl;
 
         //Not parallel 
@@ -63,7 +63,7 @@ int main(int argc, char *argv[]){
         viltrum::LoggerProgress logger("Parallel trapezoids");
 
         integrate(viltrum::integrator_newton_cotes_parallel(viltrum::steps<16*2>(viltrum::trapezoidal)),sol,
-        renderPbrt_parallel(integrator, pbrt.camera, pbrt.sampler, pbrt.spp, pbrt.resolution, pbrt.s_buffers, true, 2),viltrum::range_primary<4>(),logger);
+        renderPbrt_parallel(integrator, pbrt.camera, pbrt.spp, pbrt.resolution, pbrt.s_buffers, true, 2),viltrum::range_primary<4>(),logger);
     }
     else if (option==2){
         //With these parameters we use the newton cotes algorithm in camera space dimensions and direct light dimensions
@@ -76,7 +76,7 @@ int main(int argc, char *argv[]){
         viltrum::LoggerProgress logger("Parallel adaptive");
 
         integrate(viltrum::integrator_adaptive_iterations_parallel(viltrum::nested(viltrum::simpson,viltrum::trapezoidal),200000),sol,
-        renderPbrt_parallel(integrator, pbrt.camera, pbrt.sampler, pbrt.spp, pbrt.resolution, pbrt.s_buffers, true, 2),viltrum::range_primary<4>(),logger);
+        renderPbrt_parallel(integrator, pbrt.camera, pbrt.spp, pbrt.resolution, pbrt.s_buffers, true, 2),viltrum::range_primary<4>(),logger);
     }
 
 
