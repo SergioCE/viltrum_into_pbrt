@@ -53,7 +53,7 @@ int main(int argc, char *argv[]){
             }
             else if (argv[i][1] == 'c' && argv[i][2] == 'v') {
                 std::string value = argv[i + 1];
-                std::cout << "Flag: " << flag << ", (montecarlo) value: " << value << std::endl;
+                std::cout << "Flag: " << flag << ", (control var) value: " << value << std::endl;
                 cv = atoi(argv[i + 1]);
             }
             else if (argv[i][1] == 'v') {
@@ -93,34 +93,96 @@ int main(int argc, char *argv[]){
 
     spp = spp / mc_spp;
     const int dim = 4;
-    unsigned long spp_cv = std::max(1UL,(unsigned long)(spp*(1.0/cv)));
     int bins = pbrt.resolution.x*pbrt.resolution.y;
-    unsigned long iteration = spp_cv*bins/(2*std::pow(3, dim-1));
+    unsigned long iteration = std::max(1UL,(unsigned long)(spp*bins/(2*std::pow(3, dim-1)*cv)));
+    unsigned long spp_residual = std::max(1UL,(unsigned long)(spp*mc_spp*(cv-1)/cv));
     if(var_red == 0){
-        LoggerProgress logger("Adaptive Control Variates");
-        std::cout<<"Adaptive Control Variates parallel: "<<spp*mc_spp<<" samples per pixel."<<std::endl;
-        integrate(integrator_fubini<dim>(integrator_adaptive_control_variates_parallel(nested(simpson,trapezoidal),iteration,std::max(1UL,spp-spp_cv)),monte_carlo(mc_spp)),
-        sol,renderPbrt_parallel(integrator, pbrt.camera, pbrt.sampler, pbrt.spp, pbrt.resolution, pbrt.s_buffers, numDim, chosen_dims),range_infinite(0.f,0.f,1.f,1.f),logger);
+        LoggerProgress logger("rr_uniform, alpha=optimized");
+        std::cout<<"rr_uniform, alpha=optimized parallel: "<<spp*mc_spp<<" samples per pixel."<<std::endl;
+        integrate(
+            integrator_adaptive_fubini_variance_reduction_parallel<dim>(
+                    nested(simpson,trapezoidal),error_heuristic_default(error_metric_absolute()),iteration,mc_spp,
+                    rr_uniform_region(),cv_optimize_weight(),region_sampling_uniform(),spp_residual),
+        sol,renderPbrt_parallel(integrator, pbrt.camera, pbrt.sampler, pbrt.spp, pbrt.resolution, pbrt.s_buffers, numDim, chosen_dims),range_infinite(0.0f,1.0f),logger);
     }
-    else if(var_red == 1){ 
-        LoggerProgress logger("Adaptive Is - Optimized alpha");
-        std::cout<<"Adaptive Control Variates parallel: "<<spp*mc_spp<<" samples per pixel."<<std::endl;
-        integrate(integrator_fubini<dim>(integrator_adaptive_variance_reduction_parallel(nested(simpson,trapezoidal),iteration,rr_integral_region(),cv_optimize_weight(),std::max(1UL,spp-spp_cv)),monte_carlo(mc_spp)),
-            sol,renderPbrt_parallel(integrator, pbrt.camera, pbrt.sampler, pbrt.spp, pbrt.resolution, pbrt.s_buffers, numDim, chosen_dims),range_infinite(0.f,0.f,1.f,1.f),logger);
+    else if(var_red == 1){
+        LoggerProgress logger("rr_uniform, alpha=0");
+        std::cout<<"rr_uniform, alpha=0 parallel: "<<spp*mc_spp<<" samples per pixel."<<std::endl;
+        integrate(
+            integrator_adaptive_fubini_variance_reduction_parallel<dim>(
+                    nested(simpson,trapezoidal),error_heuristic_default(error_metric_absolute()),iteration,mc_spp,
+                    rr_uniform_region(),cv_fixed_weight(0),region_sampling_uniform(),spp_residual),
+        sol,renderPbrt_parallel(integrator, pbrt.camera, pbrt.sampler, pbrt.spp, pbrt.resolution, pbrt.s_buffers, numDim, chosen_dims),range_infinite(0.0f,1.0f),logger);
     }
     else if(var_red == 2){
-        LoggerProgress logger("Adaptive Is - alpha=0");
-        std::cout<<"Adaptive Control Variates parallel: "<<spp*mc_spp<<" samples per pixel."<<std::endl;
-        integrate(integrator_fubini<dim>(integrator_adaptive_variance_reduction_parallel(nested(simpson,trapezoidal),iteration,rr_integral_region(),cv_fixed_weight(0.0),std::max(1UL,spp-spp_cv)),monte_carlo(mc_spp)),
+        LoggerProgress logger("rr_uniform, alpha=1");
+        std::cout<<"rr_uniform, alpha=opt parallel: "<<spp*mc_spp<<" samples per pixel."<<std::endl;
+        integrate(
+            integrator_adaptive_fubini_variance_reduction_parallel<dim>(
+                    nested(simpson,trapezoidal),error_heuristic_default(error_metric_absolute()),iteration,mc_spp,
+                    rr_uniform_region(),cv_fixed_weight(1),region_sampling_uniform(),spp_residual),
+        sol,renderPbrt_parallel(integrator, pbrt.camera, pbrt.sampler, pbrt.spp, pbrt.resolution, pbrt.s_buffers, numDim, chosen_dims),range_infinite(0.0f,1.0f),logger);
+    }
+
+
+    else if(var_red == 3){ 
+        LoggerProgress logger("rr_integral - Optimized alpha");
+        std::cout<<"rr_integral - Optimized alpha: "<<spp*mc_spp<<" samples per pixel."<<std::endl;
+        integrate(
+            integrator_adaptive_fubini_variance_reduction_parallel<dim>(
+                    nested(simpson,trapezoidal),error_heuristic_default(error_metric_absolute()),iteration,mc_spp,
+                    rr_integral_region(),cv_optimize_weight(),region_sampling_uniform(),spp_residual),
             sol,renderPbrt_parallel(integrator, pbrt.camera, pbrt.sampler, pbrt.spp, pbrt.resolution, pbrt.s_buffers, numDim, chosen_dims),range_infinite(0.f,0.f,1.f,1.f),logger);
     }
-    else if(var_red == 3){
-        LoggerProgress logger("Adaptive CV - alpha=1 - uniform region");
-        std::cout<<"Adaptive Control Variates parallel: "<<spp*mc_spp<<" samples per pixel."<<std::endl;
-        integrate(integrator_fubini<dim>(integrator_adaptive_variance_reduction_parallel(nested(simpson,trapezoidal),iteration,rr_uniform_region(),cv_fixed_weight(1.0),std::max(1UL,spp-spp_cv)),monte_carlo(mc_spp)),
+    else if(var_red == 4){
+        LoggerProgress logger("rr_integral - alpha=0");
+        std::cout<<"rr_integral - alpha=0: "<<spp*mc_spp<<" samples per pixel."<<std::endl;
+        integrate(
+            integrator_adaptive_fubini_variance_reduction_parallel<dim>(
+                    nested(simpson,trapezoidal),error_heuristic_default(error_metric_absolute()),iteration,mc_spp,
+                    rr_integral_region(),cv_fixed_weight(0),region_sampling_uniform(),spp_residual),
             sol,renderPbrt_parallel(integrator, pbrt.camera, pbrt.sampler, pbrt.spp, pbrt.resolution, pbrt.s_buffers, numDim, chosen_dims),range_infinite(0.f,0.f,1.f,1.f),logger);
     }
-    
+    else if(var_red == 5){
+        LoggerProgress logger("rr_integral - alpha=1");
+        std::cout<<"rr_integral - alpha=1: "<<spp*mc_spp<<" samples per pixel."<<std::endl;
+        integrate(
+            integrator_adaptive_fubini_variance_reduction_parallel<dim>(
+                    nested(simpson,trapezoidal),error_heuristic_default(error_metric_absolute()),iteration,mc_spp,
+                    rr_integral_region(),cv_fixed_weight(1),region_sampling_uniform(),spp_residual),
+            sol,renderPbrt_parallel(integrator, pbrt.camera, pbrt.sampler, pbrt.spp, pbrt.resolution, pbrt.s_buffers, numDim, chosen_dims),range_infinite(0.f,0.f,1.f,1.f),logger);
+    }
+
+
+    else if(var_red == 6){ 
+        LoggerProgress logger("rr_error_region - Optimized alpha");
+        std::cout<<"rr_error_region - Optimized alpha: "<<spp*mc_spp<<" samples per pixel."<<std::endl;
+        integrate(
+            integrator_adaptive_fubini_variance_reduction_parallel<dim>(
+                    nested(simpson,trapezoidal),error_heuristic_default(error_metric_absolute()),iteration,mc_spp,
+                    rr_error_region(),cv_optimize_weight(),region_sampling_uniform(),spp_residual),
+            sol,renderPbrt_parallel(integrator, pbrt.camera, pbrt.sampler, pbrt.spp, pbrt.resolution, pbrt.s_buffers, numDim, chosen_dims),range_infinite(0.f,0.f,1.f,1.f),logger);
+    }
+    else if(var_red == 7){
+        LoggerProgress logger("rr_error_region - alpha=0");
+        std::cout<<"rr_error_region - alpha=0: "<<spp*mc_spp<<" samples per pixel."<<std::endl;
+        integrate(
+            integrator_adaptive_fubini_variance_reduction_parallel<dim>(
+                    nested(simpson,trapezoidal),error_heuristic_default(error_metric_absolute()),iteration,mc_spp,
+                    rr_error_region(),cv_fixed_weight(0),region_sampling_uniform(),spp_residual),
+            sol,renderPbrt_parallel(integrator, pbrt.camera, pbrt.sampler, pbrt.spp, pbrt.resolution, pbrt.s_buffers, numDim, chosen_dims),range_infinite(0.f,0.f,1.f,1.f),logger);
+    }
+    else if(var_red == 8){
+        LoggerProgress logger("rr_error_region - alpha=1");
+        std::cout<<"rr_error_region - alpha=1: "<<spp*mc_spp<<" samples per pixel."<<std::endl;
+        integrate(
+            integrator_adaptive_fubini_variance_reduction_parallel<dim>(
+                    nested(simpson,trapezoidal),error_heuristic_default(error_metric_absolute()),iteration,mc_spp,
+                    rr_error_region(),cv_fixed_weight(1),region_sampling_uniform(),spp_residual),
+            sol,renderPbrt_parallel(integrator, pbrt.camera, pbrt.sampler, pbrt.spp, pbrt.resolution, pbrt.s_buffers, numDim, chosen_dims),range_infinite(0.f,0.f,1.f,1.f),logger);
+    }
+
+
     string name = get_image_name(pbrt);
     std::string filename = output;
     
@@ -129,7 +191,4 @@ int main(int argc, char *argv[]){
     return 0;
     
 }
-
-
-
 
